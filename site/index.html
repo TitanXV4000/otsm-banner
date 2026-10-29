@@ -22,7 +22,7 @@
   figure { margin: 14px 0 6px; }
   figure img { display: block; max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
   figcaption { color: var(--dim); font-size: 14px; margin-top: 6px; }
-  .hero { margin-top: -18px; }
+  .hero { margin-top: 20px; }
   .hero img { box-shadow: 0 6px 24px rgba(0, 20, 50, .18); }
   .download { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 18px 20px; margin: 28px 0 0; }
   .btn { display: inline-block; background: #1a73e8; color: #fff; text-decoration: none; font-weight: 600; padding: 10px 20px; border-radius: 6px; }
@@ -30,7 +30,19 @@
   .download .meta { color: var(--dim); font-size: 14px; }
   ol li, ul li { margin: 4px 0; }
   .note { background: #fff; border-left: 4px solid #1a73e8; padding: 10px 14px; border-radius: 0 6px 6px 0; max-width: 780px; }
-  @media (max-width: 760px) { header h1 { font-size: 26px; } }
+  @media (max-width: 760px) { header h1 { font-size: 26px; } nav.tabs a { padding: 12px 8px; } }
+  nav.tabs { background: #fff; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+  nav.tabs .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; display: flex; gap: 4px; overflow-x: auto; }
+  nav.tabs a { padding: 12px 14px; color: var(--ink); text-decoration: none; font-weight: 600; border-bottom: 3px solid transparent; white-space: nowrap; }
+  nav.tabs a:hover { color: var(--link); }
+  nav.tabs a.on { color: var(--link); border-bottom-color: var(--link); }
+  section.tab { padding-top: 8px; }
+  .getit { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 20px 0 0; }
+  .getit .meta { color: var(--dim); font-size: 14px; }
+  .changes dt { font-weight: 700; font-size: 17px; margin-top: 22px; }
+  .changes dt span { font-weight: 400; color: var(--dim); font-size: 14px; margin-left: 8px; }
+  .changes dd { margin: 4px 0 0; }
+  .changes ul { margin: 4px 0; padding-left: 22px; }
   footer { color: var(--dim); font-size: 14px; border-top: 1px solid var(--line); margin-top: 48px; padding-top: 14px; }
 </style>
 </head>
@@ -42,17 +54,22 @@
       with the contact's other cases, the account's entitlements and FTS one click away.</p>
   </div>
 </header>
+<nav class="tabs" aria-label="Sections">
+  <div class="wrap">
+    <a href="#overview" data-tab="overview">Overview</a>
+    <a href="#install" data-tab="install">Download &amp; install</a>
+    <a href="#changelog" data-tab="changelog">Changelog</a>
+  </div>
+</nav>
 <main>
+<section id="tab-overview" class="tab">
   <figure class="hero">
     <img src="img/banner.png" width="1600" height="230" alt="The banner above an OTSM case: case number, title, High priority, Pending End User status, owner, contact, account, Product Dev ID, created and updated dates, and FTS Host and Cust buttons">
     <figcaption>The banner sits above OTSM's own header. Screenshots on this page use sample data.</figcaption>
   </figure>
 
-  <div class="download">
-    <a class="btn" href="otsm-banner-@VERSION@.zip" download>Chrome or Edge: download @VERSION@</a>
-    <a class="btn" href="otsm-banner-@VERSION@.xpi">Firefox: add @VERSION@</a>
-    <span class="meta">@DATE@ · Windows, Mac or Linux · <a href="https://github.com/TitanXV4000/otsm-banner">Source on GitHub</a></span>
-  </div>
+  <p class="getit"><a class="btn" href="#install">Download &amp; install @VERSION@</a> <span class="meta">for Chrome, Edge and Firefox</span></p>
+
 
   <h2>What it shows</h2>
   <ul>
@@ -98,7 +115,20 @@
     Changes show on open cases straight away.</p>
   <figure><a href="img/settings.png"><img src="img/settings.png" alt="The settings page: a live preview, the list of fields with tick boxes and arrows, colour choices and other options"></a></figure>
 
-  <h2>Install</h2>
+  <h2>Privacy</h2>
+  <p>The extension only runs on OTSM case pages. It reads the case, contact, account, entitlement and special handling note details from OTSM with your own login,
+    the same way the OTSM page does, and doesn't send anything anywhere else. Your settings are kept in your browser profile.</p>
+
+</section>
+
+<section id="tab-install" class="tab">
+  <h2>Download &amp; install</h2>
+  <div class="download">
+    <a class="btn" href="otsm-banner-@VERSION@.zip" download>Chrome or Edge: download @VERSION@</a>
+    <a class="btn" href="otsm-banner-@VERSION@.xpi">Firefox: add @VERSION@</a>
+    <span class="meta">@DATE@ · Windows, Mac or Linux · <a href="https://github.com/TitanXV4000/otsm-banner">Source on GitHub</a></span>
+  </div>
+
   <h3>Firefox</h3>
   <ol>
     <li>Click <b>Firefox: add</b> above, then <b>Continue to Installation</b> and <b>Add</b>.</li>
@@ -127,11 +157,61 @@
     for FTP links. Or right-click the FTS button to copy the address and paste it into your FTP program (in FileZilla, into the
     Quickconnect <b>Host</b> box).</p>
 
-  <h2>Privacy</h2>
-  <p>The extension only runs on OTSM case pages. It reads the case, contact, account, entitlement and special handling note details from OTSM with your own login,
-    the same way the OTSM page does, and doesn't send anything anywhere else. Your settings are kept in your browser profile.</p>
+</section>
+
+<section id="tab-changelog" class="tab">
+  <h2>Changelog</h2>
+  <dl class="changes">
+    <dt>1.7.2 <span>October 29, 2026</span></dt>
+    <dd><ul>
+      <li>Firefox: install with one click from this page; Firefox installs new versions by itself.</li>
+      <li>Right-click the FTS button to copy the FTP address (replaces the copy icon).</li>
+    </ul></dd>
+    <dt>1.7.1 <span>October 29, 2026</span></dt>
+    <dd><ul>
+      <li>Change a case's status from OTSM's own case lists: click the status and pick a new one (on by default; can be turned off in the settings).</li>
+      <li>In a narrow window the title shrinks first, then the title and account together, then a long contact name.</li>
+      <li>The settings page shows the version.</li>
+    </ul></dd>
+    <dt>1.6.0 <span>October 29, 2026</span></dt>
+    <dd><ul>
+      <li>Phone numbers call with Cisco Jabber; the pencil next to a number opens it in Jabber to edit before calling.</li>
+    </ul></dd>
+    <dt>1.5.1 <span>October 29, 2026</span></dt>
+    <dd><ul>
+      <li>Setting: FTS opens in WinSCP or your default FTP app.</li>
+      <li>Copy the FTS address for FileZilla or other FTP programs.</li>
+    </ul></dd>
+    <dt>1.3.1 <span>October 29, 2026</span></dt>
+    <dd><ul>
+      <li>The account card shows the support team (TAM, SAM, premium manager, support group) and special handling notes.</li>
+      <li>The names at the top of the contact and account cards open their OTSM pages.</li>
+      <li>The contact's other cases include cases they follow, as their portal shows them.</li>
+    </ul></dd>
+    <dt>1.2.6 <span>October 29, 2026</span></dt>
+    <dd><ul>
+      <li>First version on this page: the one-line banner, contact and account cards, the contact's and account's other cases,
+        the account's entitlements, FTS in WinSCP, Product Dev ID linked to Quixy, and settings for fields, order, colours,
+        title length, names and FTS.</li>
+    </ul></dd>
+  </dl>
+</section>
 
   <footer>Questions, problems or ideas: Trevor Sanford, <a href="mailto:tsanford@opentext.com">tsanford@opentext.com</a>.</footer>
 </main>
+<script>
+  // Tabs: show the section named in the address (#install, #changelog), Overview otherwise. Without script all show.
+  (() => {
+    const tabs = [...document.querySelectorAll('nav.tabs a')];
+    const show = () => {
+      const id = ['overview', 'install', 'changelog'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview';
+      document.querySelectorAll('section.tab').forEach(s => { s.hidden = s.id !== 'tab-' + id; });
+      tabs.forEach(a => a.classList.toggle('on', a.dataset.tab === id));
+      window.scrollTo(0, 0);
+    };
+    window.addEventListener('hashchange', show);
+    show();
+  })();
+</script>
 </body>
 </html>
