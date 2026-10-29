@@ -58,17 +58,24 @@
     <li><b>Case</b> number (click to copy), <b>Title</b> (shortened; hover for all of it), <b>Priority</b> and <b>Status</b> badges, <b>Owner</b>, <b>Contact</b>, <b>Account</b>, <b>Created</b> and <b>Updated</b>.</li>
     <li><b>Product Dev ID</b> when the case has one, linked to its Quixy page. <b>Product</b> and <b>Entitlement</b> can be turned on in the settings.</li>
     <li><b>FTS</b> opens the case's FTS account in WinSCP, logged in with the case's credentials.</li>
+    <li>Contact and account cards with phone numbers, the account's support team and special handling notes.</li>
     <li>It stays on screen as you scroll, and reloads when you press OTSM's Refresh button on the case.</li>
   </ul>
 
   <h3>Contact and account cards</h3>
-    <p>Hover over the contact or account name for their details: email and phone numbers, time zone with the local time there,
-    location, account number and region. Click to keep the card open.</p>
+  <p>Hover over the contact or account name for their details: email and phone numbers, time zone with the local time there,
+    location, account number and region. Click to keep the card open. The name at the top of a card opens the contact's or
+    account's page in OTSM, and phone numbers can call through your phone app or Cisco Jabber.</p>
   <figure><a href="img/contact-card.png"><img src="img/contact-card.png" alt="Contact card with email, office and mobile numbers, time zone and location"></a></figure>
+  <p>The account card also shows the <b>support team</b>: the TAM, SAM, premium manager and support group from the case's
+    entitlement (or the account's other entitlements), and the account's <b>special handling notes</b>.</p>
+  <figure><a href="img/account-card.png"><img src="img/account-card.png" alt="Account card with account number, region, time zone, a support team of TAM, SAM and support group, and a special handling note"></a></figure>
+
   <h3>Other cases</h3>
-    <p>The case icon next to the contact lists the contact's other cases, or the whole account's, newest first, with links.
-    This case is highlighted and closed cases are greyed.</p>
-  <figure><a href="img/cases-account.png"><img src="img/cases-account.png" alt="Popup listing the account's cases with case number, title, status, owner, contact and created date"></a></figure>
+  <p>The case icon next to the contact lists the contact's other cases, or the whole account's, newest first, with links.
+    Cases the contact follows are included and marked, as they are in the contact's own portal. This case is highlighted
+    and closed cases are greyed.</p>
+  <figure><a href="img/cases.png"><img src="img/cases.png" alt="Popup listing the contact's cases, including one they follow from another account, with case number, title, status, owner and created date"></a></figure>
 
   <h3>Entitlements</h3>
   <p>The shield icon next to the account lists its entitlements: product, support plan, contract, dates and state, in-use ones first.
@@ -77,7 +84,8 @@
 
   <h3>Settings</h3>
   <p>Click ⚙ on the banner (or right-click the extension's icon and choose Options) to pick which fields show and in what order,
-    the colours, the title length, how names are shown (First Last or Last, First) and which FTS account the button uses.
+    the colours, the title length, how names are shown (First Last or Last, First), whether phone numbers open your phone app or Jabber,
+    and which FTS account the button uses.
     Changes show on open cases straight away.</p>
   <figure><a href="img/settings.png"><img src="img/settings.png" alt="The settings page: a live preview, the list of fields with tick boxes and arrows, colour choices and other options"></a></figure>
 
@@ -103,7 +111,7 @@
     tick <b>Always allow</b> so it doesn't ask again.</p>
 
   <h2>Privacy</h2>
-  <p>The extension only runs on OTSM case pages. It reads the case, contact, account and entitlement details from OTSM with your own login,
+  <p>The extension only runs on OTSM case pages. It reads the case, contact, account, entitlement and special handling note details from OTSM with your own login,
     the same way the OTSM page does, and doesn't send anything anywhere else. Your settings are kept in your browser profile.</p>
 
   <footer>Questions, problems or ideas: Trevor Sanford, <a href="mailto:tsanford@opentext.com">tsanford@opentext.com</a>.</footer>

@@ -44,6 +44,16 @@ const ents = [
   ent('20000001', 'Premium Support', 'ArcSight Enterprise Security Manager (ESM)', 'CT-000101', '2024-01-01', '2025-12-31', 'Inactive'),
 ];
 const entitled = ents.slice(0, 2);
+// The case's entitlement with its support team, a Special Handling Note, and a case the contact follows (another account's)
+const caseEnt = { properties: Object.assign({}, ents[0].properties, { TechnicalAccountManager_c: '60010', SupportAccountManager_c: '60011', AssignmentGroup_c: '70001' }),
+  related_properties: Object.assign({}, ents[0].related_properties, {
+    TechnicalAccountManager_c: { Name: 'Rivera, Morgan', Email: 'morgan.rivera@example.com', OfficePhoneNumber: '+1 555 0142' },
+    SupportAccountManager_c: { Name: 'Hart, Riley', Email: 'riley.hart@example.com', OfficePhoneNumber: '+1 555 0157' },
+    AssignmentGroup_c: { Name: 'Premium Support' } }) };
+const notes = [{ properties: { Id: '80001', Status_c: 'Active_c', Message_c: '<p>SAM - Riley Hart</p><p>NSE - Jesse Carter</p>' } }];
+const followed = { properties: { Id: '11612007', DisplayLabel: '[ESM] Shared connector appliance drops events during peak load', Status: 'RequestStatusInProgress', Priority: 'HighPriority',
+  EmsCreationTime: day('2026-10-21T15:00:00Z'), RequestedForPerson: '60099', RequestToCompany: '50077' },
+  related_properties: { OwnedByPerson: { Name: 'Lee, Drew' }, RequestedForPerson: { Name: 'Shah, Parker' }, RequestToCompany: { DisplayLabel: 'Example Partner Services' } } };
 const json = o => ({ status: 200, contentType: 'application/json', body: JSON.stringify(o) });
 const list = (entities, total) => json({ entities, meta: { total_count: total === undefined ? entities.length : total } });
 
@@ -54,6 +64,9 @@ function answer(u) {
   if (/\/ems\/Person\/\d+\?/.test(p)) return json({ entities: [{ properties: person, related_properties: { Location: { DisplayLabel: 'Chicago, IL' } } }] });
   if (/\/ems\/Company\/\d+\/associations\//.test(p)) return list([]);
   if (/\/ems\/Company\/\d+\?/.test(p)) return json({ entities: [{ properties: company, related_properties: { Headquarters: { DisplayLabel: 'Waterloo, ON' } } }] });
+  if (/\/ems\/Entitlement\/\d+\?/.test(p)) return json({ entities: [caseEnt] });
+  if (/\/ems\/SpecialHandlingNotes_c\?/.test(p)) return list(notes);
+  if (/\/ems\/Request\?filter=FollowedByUsers/.test(p)) return list([followed]);
   if (/\/ems\/Request\?filter=RequestToCompany/.test(p)) return list(cases('account'), 2147);
   if (/\/ems\/Request\?filter=RequestedForPerson/.test(p)) return list(cases('contact'));
   if (/\/ems\/Entitlement\?/.test(p)) return list(ents);
@@ -102,10 +115,12 @@ h2 { font-size: 20px; color: #1d2733; margin: 0 0 10px; font-weight: 400; }
   let [x, y] = await at('#otsmb .otsmb-col:nth-child(6) .otsmb-name, #otsmb [class*="otsmb-name"]');
   await page.mouse.move(x, y); await sleep(1200); await shotPopup('contact-card');
   await page.mouse.move(5, 500); await sleep(800);
+  [x, y] = await at('#otsmb .otsmb-col:nth-child(7) .otsmb-name');
+  await page.mouse.move(x, y); await sleep(1200); await shotPopup('account-card');
+  await page.mouse.move(5, 500); await sleep(800);
   // other cases (click the case icon), account tab too
   const click = async sel => { await page.click(sel); await page.evaluate(() => document.activeElement && document.activeElement.blur()); };
   await click('#otsmb button[title="Contact\'s other cases"]'); await sleep(1000); await shotPopup('cases');
-  await page.evaluate(() => [...document.querySelectorAll('.otsmb-tabs button')][1].click()); await sleep(1000); await page.evaluate(() => document.activeElement && document.activeElement.blur()); await shotPopup('cases-account');
   await page.keyboard.press('Escape');
   await click('#otsmb button[title="Account\'s entitlements"]'); await sleep(1000); await shotPopup('entitlements');
   await page.keyboard.press('Escape');
