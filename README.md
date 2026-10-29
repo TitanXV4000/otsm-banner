@@ -1,15 +1,20 @@
 # OTSM case banner
 
-A Chrome/Edge extension that adds a fixed banner to the top of every OTSM (SMAX) case page
-(`https://us42-smax.saas.microfocus.com/saw/Request/<id>/...`):
+A Chrome/Edge extension that adds a one-line banner, in OTSM's header navy, to the top of every OTSM (SMAX) case page
+(`https://us42-smax.saas.microfocus.com/saw/Request/<id>/...`). The layout follows the old Salesforce case header,
+with a small label over each value:
 
-- Case number (click to copy), title, status, priority, owner, created and last updated.
-- **Customer** and **Account**: hover for a contact card (email, phones, time zone with the local time there, location;
+- **Case** (click to copy), **Title** (first 60 characters; hover for all of it), **Status** and **Priority** badges, **Owner**,
+  **Customer**, **Account**, **Created**, **Updated**.
+- **Customer** and **Account** names: hover for a contact card (email, phones, time zone with the local time there, location;
   account number, region, headquarters). Click to keep it open.
-- Customer's other cases (case icon): this customer or the whole account, newest first, with links. The current case is highlighted and closed cases are greyed.
-- Account's entitlements (shield icon): product, support plan, contract, start/end date and state, with links.
-  The case's own entitlement is highlighted, and expired or inactive ones are greyed.
-- **WinSCP**: opens the case's FTS host account in WinSCP (`winscp-ftp://` link; WinSCP must be installed).
+- Case icon next to the customer: their other cases, or the whole account's, newest first, with links. The current case
+  is highlighted and closed cases are greyed.
+- Shield icon next to the account: its entitlements. Columns: entitlement number (link), product, support plan,
+  contract, start, end, state, and a ✓ when the case's contact is one of the entitlement's **Entitled users**.
+  In-use entitlements are listed first, then the latest end date. The case's own entitlement is highlighted.
+  Entitlements another company delegated to this account are included and say who owns them.
+- **FTS**: opens the case's FTS host account in WinSCP (`winscp-ftp://` link; WinSCP must be installed).
 - Refresh button. The banner also reloads when you come back to the tab after a minute or more.
 
 All data comes from the SMAX EMS REST API (`/rest/<tenant>/ems/...`) with your own browser login, so it only shows what
@@ -28,7 +33,8 @@ To update, replace the folder with the new one and click the reload arrow on the
 - `extension/manifest.json`: Manifest V3. One content script, only on the SMAX `/saw/` pages.
 - `extension/banner.js`: finds the case id in the URL. SMAX changes cases without reloading, so it checks every 0.7 s.
   It then loads the case and loads the contact cards and popups when they're opened.
-- `extension/banner.css`: styles, all prefixed `otsmb`. The banner pushes SMAX down by moving `body` and SMAX's two fixed
+- `extension/banner.css`: styles, all prefixed `otsmb`. Entitled users are the `EntitlementToViewCaseUsers` relation (a contact's: `Person/<id>/associations/ViewCaseUsersToEntitlement`).
+  The banner pushes SMAX down by moving `body` and SMAX's two fixed
   bars (`.navbar-fixed-top` and `.pl-entity-page-minimized-header`). If SMAX renames those, its header ends up under the banner.
 
 ## Test

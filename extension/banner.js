@@ -58,6 +58,10 @@
     if (!e) throw new Error(`${entity} ${id} not found`);
     return flat(e);
   }
+  async function getAssoc(entity, id, relation, layout) {
+    const j = await api(`${entity}/${id}/associations/${relation}?layout=${encodeURIComponent(layout)}&size=500`);
+    return (j.entities || []).map(flat);
+  }
   async function getList(entity, filter, layout, order) {
     const j = await api(`${entity}?filter=${encodeURIComponent(filter)}&layout=${encodeURIComponent(layout)}` +
       (order ? `&order=${encodeURIComponent(order)}` : '') + '&size=200&meta=totalCount');
@@ -84,47 +88,48 @@
     if (!on && bar) { bar.remove(); bar = null; closeFloating(); }
   }
 
+  const TITLE_MAX = 60;     // characters of the title shown; the full title is in its tooltip
+  const ACCOUNT_MAX = 32;
+  const cut = (text, max) => text.length > max ? text.slice(0, max - 1).trimEnd() + '…' : text;
+  const shortDate = ms => ms ? new Date(+ms).toLocaleString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit', hour: 'numeric', minute: '2-digit' }) : '';
+
+  // One column of the banner: a small label over its value (the Salesforce case header layout)
+  function col(label, cls, ...value) {
+    return el('div', { class: 'otsmb-col' + (cls ? ' ' + cls : '') }, el('div', { class: 'otsmb-label' }, label), el('div', { class: 'otsmb-value' }, ...value));
+  }
+
   function render() {
     const b = ensureBar();
     b.replaceChildren();
     const c = current;
     if (!c.req) {
-      b.append(el('div', { class: 'otsmb-row' }, el('span', { class: 'otsmb-id' }, c.id),
-        el('span', { class: c.error ? 'otsmb-err' : 'otsmb-dim' }, c.error ? `Couldn't load the case: ${c.error}` : 'Loading…'),
-        refreshButton()));
+      b.append(col('Case', null, el('span', { class: 'otsmb-id' }, c.id)),
+        col('', 'otsmb-grow', el('span', { class: c.error ? 'otsmb-err' : 'otsmb-dim' }, c.error ? `Couldn't load the case: ${c.error}` : 'Loading…')),
+        refreshButton());
       return;
     }
     const r = c.req;
     const status = STATUS[r.Status] || r.Status || '';
     const prio = PRIORITY[r.Priority] || r.Priority || '';
-
-    const row1 = el('div', { class: 'otsmb-row' },
-      el('span', { class: 'otsmb-id', title: 'Click to copy the case number', onclick: e => copy(e.currentTarget, r.Id) }, r.Id),
-      el('span', { class: 'otsmb-title', title: r.DisplayLabel }, r.DisplayLabel || ''),
-      status && el('span', { class: 'otsmb-pill otsmb-st-' + (r.Status || '').replace(/[^A-Za-z]/g, '') }, status),
-      prio && el('span', { class: 'otsmb-pill otsmb-pr-' + prio.toLowerCase() }, prio),
-      el('span', { class: 'otsmb-spacer' }),
-      el('span', { class: 'otsmb-field' }, el('b', null, 'Owner '), rel(r, 'OwnedByPerson', 'Name') || '(none)'),
-      el('span', { class: 'otsmb-field' }, el('b', null, 'Created '), dateTime(r.EmsCreationTime)),
-      el('span', { class: 'otsmb-field' }, el('b', null, 'Updated '), dateTime(r.LastUpdateTime)),
-      refreshButton());
-
+    const title = r.DisplayLabel || '';
     const custName = rel(r, 'RequestedForPerson', 'Name');
     const acctName = rel(r, 'RequestToCompany', 'DisplayLabel');
-    const ent = rel(r, 'Entitlement', 'DisplayLabel');
-    const row2 = el('div', { class: 'otsmb-row' },
-      el('span', { class: 'otsmb-field' }, el('b', null, 'Customer '),
-        r.RequestedForPerson ? hoverName(custName || '(unknown)', personCard) : '(none)',
-        r.RequestedForPerson && iconButton('cases', "Customer's other cases", casesPopup)),
-      el('span', { class: 'otsmb-field' }, el('b', null, 'Account '),
-        r.RequestToCompany ? hoverName(acctName || '(unknown)', companyCard) : '(none)',
-        r.RequestToCompany && iconButton('ents', "Account's entitlements", entitlementsPopup)),
-      ent && el('span', { class: 'otsmb-field' }, el('b', null, 'Entitlement '),
-        r.Entitlement ? el('a', { href: recordUrl('Entitlement', r.Entitlement) }, ent) : ent),
-      el('span', { class: 'otsmb-spacer' }),
-      winscpLink(r));
 
-    b.append(row1, row2);
+    b.append(
+      col('Case', null, el('span', { class: 'otsmb-id', title: 'Click to copy the case number', onclick: e => copy(e.currentTarget, r.Id) }, r.Id)),
+      col('Title', 'otsmb-grow', el('span', { class: 'otsmb-title', title }, cut(title, TITLE_MAX))),
+      col('Status', null, status ? el('span', { class: 'otsmb-pill otsmb-st-' + (r.Status || '').replace(/[^A-Za-z]/g, '') }, status) : ''),
+      col('Priority', null, prio ? el('span', { class: 'otsmb-pill otsmb-pr-' + prio.toLowerCase() }, prio) : ''),
+      col('Owner', null, rel(r, 'OwnedByPerson', 'Name') || '(none)'),
+      col('Customer', null,
+        r.RequestedForPerson ? hoverName(custName || '(unknown)', custName, personCard) : '(none)',
+        r.RequestedForPerson && iconButton('cases', "Customer's other cases", casesPopup)),
+      col('Account', null,
+        r.RequestToCompany ? hoverName(cut(acctName || '(unknown)', ACCOUNT_MAX), acctName, companyCard) : '(none)',
+        r.RequestToCompany && iconButton('ents', "Account's entitlements", entitlementsPopup)),
+      col('Created', null, shortDate(r.EmsCreationTime)),
+      col('Updated', null, shortDate(r.LastUpdateTime)),
+      el('div', { class: 'otsmb-actions' }, ftsLink(r), refreshButton()));
   }
 
   function refreshButton() {
@@ -136,8 +141,8 @@
   }
 
   // A name that shows a contact card on hover; a click keeps it open
-  function hoverName(text, build) {
-    const n = el('span', { class: 'otsmb-name', tabindex: '0' }, text);
+  function hoverName(text, full, build) {
+    const n = el('span', { class: 'otsmb-name', tabindex: '0', title: full !== text ? full : null }, text);
     n.addEventListener('mouseenter', () => { clearTimeout(hoverTimer); hoverTimer = setTimeout(() => { if (!floating || !floating.pinned) openFloating(n, build, false); }, 250); });
     n.addEventListener('mouseleave', () => { clearTimeout(hoverTimer); hoverTimer = setTimeout(() => { if (floating && !floating.pinned && !floating.box.matches(':hover')) closeFloating(); }, 300); });
     n.addEventListener('click', e => { e.stopPropagation(); clearTimeout(hoverTimer); toggleFloating(n, build, true); });
@@ -146,12 +151,12 @@
   }
 
   // FTS host account in WinSCP (winscp-ftp:// opens WinSCP rather than another FTP handler)
-  function winscpLink(r) {
-    if (!r.FTSHostAccount_c || !r.FTSHostPassword_c) return el('span', { class: 'otsmb-dim' }, 'No FTS account');
+  function ftsLink(r) {
+    if (!r.FTSHostAccount_c || !r.FTSHostPassword_c) return el('span', { class: 'otsmb-dim', title: 'This case has no FTS account' }, 'No FTS');
     let host = FTS_HOST;
     try { if (r.FTSLogin_c) host = new URL(r.FTSLogin_c).host; } catch (e) { /* keep the default */ }
     const url = `winscp-ftp://${encodeURIComponent(r.FTSHostAccount_c)}:${encodeURIComponent(r.FTSHostPassword_c)}@${host}/`;
-    return el('a', { class: 'otsmb-btn', href: url, title: `Open ${host} in WinSCP as ${r.FTSHostAccount_c}` }, 'WinSCP');
+    return el('a', { class: 'otsmb-btn', href: url, title: `Open ${host} in WinSCP as ${r.FTSHostAccount_c}` }, 'FTS');
   }
 
   function copy(node, text) {
@@ -178,10 +183,11 @@
     floating = { anchor, box, pinned };
     const a = anchor.getBoundingClientRect();
     box.style.top = (a.bottom + 6) + 'px';
-    box.style.left = Math.max(8, Math.min(a.left, window.innerWidth - 560)) + 'px';
+    const place = () => { box.style.left = Math.max(8, Math.min(a.left, window.innerWidth - box.offsetWidth - 8)) + 'px'; };
     const body = el('div', { class: 'otsmb-dim' }, 'Loading…');
     box.append(body);
-    Promise.resolve(build()).then(node => { if (floating && floating.box === box) body.replaceWith(node); })
+    place();
+    Promise.resolve(build()).then(node => { if (floating && floating.box === box) { body.replaceWith(node); place(); } })
       .catch(err => { body.textContent = `Couldn't load: ${err.message}`; body.className = 'otsmb-err'; });
   }
   function closeFloating() { if (floating) { floating.box.remove(); floating = null; } }
@@ -251,39 +257,54 @@
       wrap.replaceChildren(tabs,
         el('div', { class: 'otsmb-card-title' }, `${total} case${total === 1 ? '' : 's'}`, el('span', { class: 'otsmb-dim' }, ` · ${open} open` + (total > rows.length ? ` · newest ${rows.length} shown` : ''))),
         el('div', { class: 'otsmb-scroll' }, table(head, body)));
+      if (floating) { const f = floating.box; f.style.left = Math.max(8, Math.min(parseFloat(f.style.left), window.innerWidth - f.offsetWidth - 8)) + 'px'; }
     };
     await show('customer');
     return wrap;
   }
 
-  // The account's entitlements and the product each covers
+  // The account's entitlements (plus any another company delegated to it), the product each covers, and which of them
+  // the case's contact is an entitled user on (SMAX's "Entitled users" tab: the EntitlementToViewCaseUsers relation)
   async function entitlementsPopup() {
     const r = current.req;
-    const { rows } = await getList('Entitlement', `OwnerCompany = ${r.RequestToCompany}`,
-      'Id,DisplayLabel,PhaseId,StartDate_c,EndDate_c,ProductModel_c.DisplayLabel,SupportPlan_c.DisplayLabel,Contract.DisplayLabel');
+    const layout = 'Id,DisplayLabel,PhaseId,StartDate_c,EndDate_c,OwnerCompany,OwnerCompany.DisplayLabel,ProductModel_c.DisplayLabel,SupportPlan_c.DisplayLabel,Contract.DisplayLabel';
+    const [own, delegated, mine] = await Promise.all([
+      getList('Entitlement', `OwnerCompany = ${r.RequestToCompany}`, layout),
+      getAssoc('Company', r.RequestToCompany, 'DelegatedCompaniesToEntitlement', layout).catch(() => []),
+      r.RequestedForPerson ? getAssoc('Person', r.RequestedForPerson, 'ViewCaseUsersToEntitlement', layout).catch(() => null) : null,
+    ]);
+    const byId = new Map();
+    for (const x of [...own.rows, ...delegated, ...(mine || [])]) if (!byId.has(x.Id)) byId.set(x.Id, x);
+    const entitled = new Set((mine || []).map(x => x.Id));
     const now = Date.now();
+    const inUse = x => x.PhaseId === 'Inuse' && !(x.EndDate_c && +x.EndDate_c < now);
     const product = x => rel(x, 'ProductModel_c', 'DisplayLabel');
-    rows.sort((a, b) => product(a).localeCompare(product(b)) || (+b.EndDate_c || 0) - (+a.EndDate_c || 0));
+    // In use first, then the latest end date, then product
+    const rows = [...byId.values()].sort((a, b) => (inUse(b) - inUse(a)) || ((+b.EndDate_c || 0) - (+a.EndDate_c || 0)) || product(a).localeCompare(product(b)));
+    const contact = rel(r, 'RequestedForPerson', 'Name') || 'the contact';
     const body = rows.map(x => {
       const expired = x.EndDate_c && +x.EndDate_c < now;
-      return el('tr', { class: (x.Id === r.Entitlement ? 'otsmb-current ' : '') + (expired || (x.PhaseId && x.PhaseId !== 'Inuse') ? 'otsmb-closed' : '') },
-        el('td', null, el('a', { href: recordUrl('Entitlement', x.Id) }, product(x) || '(no product)')),
+      const other = x.OwnerCompany && x.OwnerCompany !== r.RequestToCompany;
+      return el('tr', { class: (x.Id === r.Entitlement ? 'otsmb-current ' : '') + (inUse(x) ? '' : 'otsmb-closed') },
+        el('td', null, el('a', { href: recordUrl('Entitlement', x.Id) }, x.Id)),
+        el('td', null, product(x) || '(no product)', other ? el('div', { class: 'otsmb-dim' }, 'Owned by ' + rel(x, 'OwnerCompany', 'DisplayLabel')) : null),
         el('td', null, x.DisplayLabel || ''),
         el('td', null, rel(x, 'Contract', 'DisplayLabel')),
         el('td', null, dateOnly(x.StartDate_c)),
         el('td', null, dateOnly(x.EndDate_c)),
-        el('td', null, x.PhaseId === 'Inuse' ? (expired ? 'Expired' : 'In use') : (x.PhaseId || '')));
+        el('td', null, x.PhaseId === 'Inuse' ? (expired ? 'Expired' : 'In use') : (x.PhaseId || '')),
+        mine ? el('td', { class: 'otsmb-center', title: entitled.has(x.Id) ? `${contact} is an entitled user` : '' }, entitled.has(x.Id) ? '✓' : '') : null);
     });
     return el('div', null,
       el('div', { class: 'otsmb-card-title' }, `${rows.length} entitlement${rows.length === 1 ? '' : 's'}`,
-        r.Entitlement ? el('span', { class: 'otsmb-dim' }, ' · this case\'s is highlighted') : null),
-      rows.length ? el('div', { class: 'otsmb-scroll' }, table(['Product', 'Support plan', 'Contract', 'Start', 'End', 'State'], body))
+        el('span', { class: 'otsmb-dim' }, (mine ? ` · ✓ = ${contact} is an entitled user (${entitled.size})` : '') + (r.Entitlement ? " · this case's is highlighted" : ''))),
+      rows.length ? el('div', { class: 'otsmb-scroll' }, table(['Entitlement', 'Product', 'Support plan', 'Contract', 'Start', 'End', 'State'].concat(mine ? ['Contact'] : []), body))
         : el('div', { class: 'otsmb-dim' }, 'None found for this account.'));
   }
 
   // ---------- loading and page watching ----------
   const CASE_LAYOUT = 'Id,DisplayLabel,Status,Priority,EmsCreationTime,LastUpdateTime,OwnedByPerson.Name,' +
-    'RequestedForPerson,RequestedForPerson.Name,RequestToCompany,RequestToCompany.DisplayLabel,Entitlement,Entitlement.DisplayLabel,' +
+    'RequestedForPerson,RequestedForPerson.Name,RequestToCompany,RequestToCompany.DisplayLabel,Entitlement,' +
     'FTSHostAccount_c,FTSHostPassword_c,FTSLogin_c';
 
   async function load(id, again) {

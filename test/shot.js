@@ -31,6 +31,8 @@ const { puppeteer, BASE, TENANT, log, login, sleep } = require('/poc/common.js')
     await page.mouse.click(5, 500); await sleep(300);
     await (await byTitle("Account's entitlements")).click(); await sleep(3000);
     await page.screenshot({ path: '/out/6-ents.png' });
+    log('ents rows: ' + await page.$$eval('.otsmb-float tr', rs => rs.map(r => [...r.cells].map(c => c.innerText.replace(/\n/g, ' / ')).join(' | ')).join('\n')));
+    log('float box: ' + await page.$eval('.otsmb-float', n => JSON.stringify(n.getBoundingClientRect())));
     await page.mouse.click(5, 500); await page.evaluate(() => window.scrollTo(0, 1200)); await sleep(2500);
     await page.screenshot({ path: '/out/7-scrolled.png' });
     log('winscp: ' + await page.$eval('#otsmb .otsmb-btn', n => n.href.replace(/:[^:@/]*@/, ':***@')).catch(() => 'none'));
