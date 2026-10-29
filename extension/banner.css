@@ -12,11 +12,11 @@ html.otsmb-on body { padding-top: var(--otsmb-h) !important; }
 html.otsmb-on .navbar-fixed-top { top: var(--otsmb-h) !important; }
 html.otsmb-on .pl-entity-page-minimized-header { top: calc(56px + var(--otsmb-h)) !important; }
 
-/* When the window is narrow the title gives up room, then title and account together (fit() in banner.js) */
+/* When the window is narrow the title gives up room, then title and account together, then the contact (fit() in banner.js) */
 #otsmb .otsmb-col { display: flex; flex-direction: column; justify-content: center; min-width: 0; flex: none; }
 #otsmb .otsmb-grow { flex: 0 1 auto; min-width: 80px; }
 #otsmb.otsmb-measure .otsmb-grow { flex: none !important; width: auto !important; }
-#otsmb .otsmb-col-account .otsmb-value { overflow: hidden; }
+#otsmb .otsmb-col-account .otsmb-value, #otsmb .otsmb-col-contact .otsmb-value { overflow: hidden; }
 #otsmb .otsmb-label { font-size: 11px; color: var(--otsmb-label, #9db4cc); line-height: 1.2; }
 #otsmb .otsmb-value { display: flex; align-items: center; gap: 3px 6px; min-width: 0; font-size: 13.5px; }
 #otsmb .otsmb-value > * { min-width: 0; }

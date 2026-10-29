@@ -115,7 +115,7 @@
     status: r => { const st = STATUS[r.Status] || r.Status || ''; return col('Status', null, st ? el('span', { class: 'otsmb-pill otsmb-st-' + (r.Status || '').replace(/[^A-Za-z]/g, '') }, st) : ''); },
     owner: r => col('Owner', null, person(rel(r, 'OwnedByPerson', 'Name')) || '(none)'),
     contact: r => { const n = person(rel(r, 'RequestedForPerson', 'Name'));
-      return col('Contact', null, r.RequestedForPerson ? hoverName(n || '(unknown)', n, personCard) : '(none)',
+      return col('Contact', 'otsmb-col-contact', r.RequestedForPerson ? hoverName(n || '(unknown)', n, personCard) : '(none)',
         r.RequestedForPerson && iconButton('cases', "Contact's other cases", casesPopup)); },
     account: r => { const n = rel(r, 'RequestToCompany', 'DisplayLabel');
       return col('Account', 'otsmb-col-account', r.RequestToCompany ? hoverName(cut(n || '(unknown)', ACCOUNT_MAX), n, companyCard) : '(none)',
@@ -154,27 +154,33 @@
   }
 
   // When the window is too narrow for the banner, the title gives up room first; once it's down to the account name's
-  // width, the two shrink evenly (both end in "…"). Everything else keeps its width.
+  // width, the two shrink evenly; once both are at the minimum, the contact name shrinks too. Shortened names end in "…"
+  // and show in full on hover. Everything else keeps its width.
   const FIT_MIN = 80;
   function fit() {
     if (!bar) return;
-    const t = bar.querySelector('.otsmb-grow'), a = bar.querySelector('.otsmb-col-account');
-    for (const x of [t, a]) if (x) x.style.width = x.style.flex = '';
+    const t = bar.querySelector('.otsmb-grow'), a = bar.querySelector('.otsmb-col-account'), c = bar.querySelector('.otsmb-col-contact');
+    const cols = [t, a, c].filter(Boolean);
+    for (const x of cols) x.style.width = x.style.flex = '';
+    for (const n of bar.querySelectorAll('.otsmb-col-contact .otsmb-name')) n.removeAttribute('title');
     if (!t) return;
     bar.classList.add('otsmb-measure');   // the title at its natural width
     let over = bar.scrollWidth - bar.clientWidth;
-    let T = t.offsetWidth, A = a ? a.offsetWidth : 0;
+    let T = t.offsetWidth, A = a ? a.offsetWidth : 0, C = c ? c.offsetWidth : 0;
     bar.classList.remove('otsmb-measure');
     if (over <= 0) return;
-    if (!a) T -= over;
+    const take = (have, floor) => { const d = Math.max(0, Math.min(over, have - floor)); over -= d; return have - d; };
+    if (!a) T = take(T, FIT_MIN);
     else {
-      const first = Math.min(over, Math.abs(T - A));
-      if (T >= A) T -= first; else A -= first;
-      over -= first;
-      T -= over / 2; A -= over / 2;
+      if (T > A) T = take(T, Math.max(A, FIT_MIN)); else A = take(A, Math.max(T, FIT_MIN));
+      const both = Math.max(0, Math.min(over, (T - FIT_MIN) + (A - FIT_MIN)));   // then evenly, down to the minimum
+      T -= both / 2; A -= both / 2; over -= both;
     }
-    t.style.flex = '0 0 auto'; t.style.width = Math.max(FIT_MIN, Math.floor(T)) + 'px';
-    if (a) { a.style.flex = '0 0 auto'; a.style.width = Math.max(FIT_MIN, Math.floor(A)) + 'px'; }
+    if (c) C = take(C, FIT_MIN);
+    const set = (x, w) => { if (x) { x.style.flex = '0 0 auto'; x.style.width = Math.max(FIT_MIN, Math.floor(w)) + 'px'; } };
+    set(t, T); set(a, A);
+    if (c && C < c.offsetWidth) set(c, C);
+    for (const n of bar.querySelectorAll('.otsmb-col-contact .otsmb-name')) if (n.scrollWidth > n.clientWidth) n.title = n.textContent;
   }
   let fitTimer = null;
   window.addEventListener('resize', () => { clearTimeout(fitTimer); fitTimer = setTimeout(fit, 100); });
