@@ -36,6 +36,7 @@ var OTSMB = (() => {
     cardsOnHover: true,        // false: contact cards open only on click
     casesTab: 'contact',       // the cases popup opens on 'contact' or 'account'
     fts: 'host',               // 'host', 'customer' or 'both'
+    ftsApp: 'winscp',          // the FTS button opens 'winscp' (winscp-ftp://) or 'ftp' (ftp://, the default FTP app)
     names: 'first',            // people's names as 'first' (First Last) or 'last' (Last, First, as OTSM stores them)
     phone: 'tel',              // phone numbers open 'tel' (the default phone app) or 'jabber' (Cisco Jabber, ciscotel:)
   };
