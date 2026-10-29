@@ -13,6 +13,8 @@ const { puppeteer, BASE, TENANT, log, login, sleep } = require('/poc/common.js')
     await page.goto(`${BASE}/saw/Request/${process.env.CASE}/general?TENANTID=${TENANT}`, { waitUntil: 'networkidle2', timeout: 120000 });
     await sleep(8000);
     await page.addStyleTag({ path: '/ext/banner.css' });
+    if (process.env.SETTINGS) await page.evaluate(j => { window.OTSMB_TEST_SETTINGS = JSON.parse(j); }, process.env.SETTINGS);
+    await page.addScriptTag({ path: '/ext/settings.js' });
     await page.addScriptTag({ path: '/ext/banner.js' });
     await sleep(4000);
     await page.screenshot({ path: '/out/1-banner.png' });
@@ -24,7 +26,7 @@ const { puppeteer, BASE, TENANT, log, login, sleep } = require('/poc/common.js')
     await page.screenshot({ path: '/out/3-company.png' });
     const icons = await page.$$('#otsmb .otsmb-icon[title]');
     const byTitle = async t => { for (const i of icons) if (await i.evaluate(n => n.title) === t) return i; };
-    await (await byTitle("Customer's other cases")).click(); await sleep(3000);
+    await (await byTitle("Contact's other cases")).click(); await sleep(3000);
     await page.screenshot({ path: '/out/4-cases.png' });
     await page.click('.otsmb-tabs button:nth-child(2)'); await sleep(3000);
     await page.screenshot({ path: '/out/5-cases-account.png' });

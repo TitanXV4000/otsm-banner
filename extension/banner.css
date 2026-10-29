@@ -3,7 +3,7 @@
   position: fixed; top: 0; left: 0; right: 0; z-index: 1035;
   height: var(--otsmb-h); box-sizing: border-box; padding: 0 12px;
   display: flex; align-items: center; gap: 22px; white-space: nowrap; overflow: hidden;
-  background: #00264b; color: #fff; border-bottom: 1px solid rgba(255,255,255,.22);   /* OTSM's header navy */
+  background: var(--otsmb-bg, #00264b); color: var(--otsmb-fg, #fff); border-bottom: 1px solid var(--otsmb-line, rgba(255,255,255,.22));   /* colours from the settings (default OTSM's header navy) */
   font: 13px/1.3 "Segoe UI", Roboto, Arial, sans-serif;
 }
 html.otsmb-on { --otsmb-h: 46px; }
@@ -15,19 +15,21 @@ html.otsmb-on .pl-entity-page-minimized-header { top: calc(56px + var(--otsmb-h)
 /* Only the title gives up room when the window is narrow; names, dates and badges keep their full width */
 #otsmb .otsmb-col { display: flex; flex-direction: column; justify-content: center; min-width: 0; flex: none; }
 #otsmb .otsmb-grow { flex: 0 1 auto; min-width: 80px; }
-#otsmb .otsmb-label { font-size: 11px; color: #9db4cc; line-height: 1.2; }
-#otsmb .otsmb-value { display: flex; align-items: center; gap: 3px; min-width: 0; font-size: 13.5px; }
+#otsmb .otsmb-label { font-size: 11px; color: var(--otsmb-label, #9db4cc); line-height: 1.2; }
+#otsmb .otsmb-value { display: flex; align-items: center; gap: 3px 6px; min-width: 0; font-size: 13.5px; }
 #otsmb .otsmb-value > * { min-width: 0; }
 #otsmb .otsmb-id { font-weight: 700; font-size: 14px; cursor: copy; }
-#otsmb .otsmb-copied { color: #7ee2a0; }
+#otsmb .otsmb-copied { opacity: .55; }
+#otsmb .otsmb-copyable { cursor: copy; }
+#otsmb a.otsmb-link { color: inherit; border-bottom: 1px dotted var(--otsmb-icon, #8cc4ff); text-decoration: none; }
 #otsmb .otsmb-title { font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
 #otsmb .otsmb-actions { margin-left: auto; display: flex; align-items: center; gap: 6px; flex: none; }
-#otsmb .otsmb-dim { color: #9db4cc; }
+#otsmb .otsmb-dim { color: var(--otsmb-label, #9db4cc); }
 #otsmb .otsmb-err { color: #ffb4ab; }
-#otsmb .otsmb-name { color: #fff; cursor: pointer; border-bottom: 1px dotted #9db4cc; overflow: hidden; text-overflow: ellipsis; }
-#otsmb .otsmb-name:hover { border-bottom-color: #fff; }
-#otsmb .otsmb-icon { border: 0; background: none; padding: 2px; color: #8cc4ff; cursor: pointer; display: inline-flex; border-radius: 4px; flex: none; }
-#otsmb .otsmb-icon:hover { background: rgba(255,255,255,.15); color: #fff; }
+#otsmb .otsmb-name { color: inherit; cursor: pointer; border-bottom: 1px dotted var(--otsmb-icon, #8cc4ff); overflow: hidden; text-overflow: ellipsis; }
+#otsmb .otsmb-name:hover { border-bottom-style: solid; }
+#otsmb .otsmb-icon { border: 0; background: none; padding: 2px; color: var(--otsmb-icon, #8cc4ff); cursor: pointer; display: inline-flex; border-radius: 4px; flex: none; }
+#otsmb .otsmb-icon:hover { background: color-mix(in srgb, var(--otsmb-fg, #fff) 15%, transparent); }
 #otsmb .otsmb-btn { background: #1a73e8; color: #fff; padding: 3px 12px; border-radius: 4px; font-weight: 600; text-decoration: none; }
 #otsmb .otsmb-btn:hover { background: #3b8bf0; }
 

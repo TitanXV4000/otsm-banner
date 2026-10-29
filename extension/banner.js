@@ -5,6 +5,7 @@
 
   const DEFAULT_TENANT = '829453953';
   const FTS_HOST = 'ftp-pro.houston.softwaregrp.com';   // used when the case has no FTS login URL
+  const QUIXY = 'https://rdapps.otxlab.net/quixy/#/viewEntity/';   // + Product Dev ID
 
   // Labels OTSM shows for the internal values (smreportparser OTSM_LABELS)
   const STATUS = {
@@ -18,6 +19,7 @@
   const ICON = {
     cases: '<svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M10 4h4a2 2 0 0 1 2 2v1h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3V6a2 2 0 0 1 2-2zm0 3h4V6h-4v1zM5 9v9h14V9H5z"/></svg>',
     ents: '<svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5l8-3zm0 2.1L6 6.4V11c0 3.9 2.5 7.4 6 8.9 3.5-1.5 6-5 6-8.9V6.4l-6-2.3zm-1 10.5l5-5 1.4 1.4-6.4 6.4-3.4-3.4L9 10.6l2 2z"/></svg>',
+    gear: '<svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3h-4l-.4 2.7a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1L11 21h4l.4-2.7a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5-2.2-1.8zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>',
     refresh: '<svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M17.6 6.4A8 8 0 1 0 20 12h-2a6 6 0 1 1-1.8-4.2L13 11h7V4l-2.4 2.4z"/></svg>',
   };
 
@@ -74,6 +76,7 @@
   let token = 0;           // drops answers for a case we've already left
   let floating = null;     // the open popup or contact card
   let hoverTimer = null;
+  let settings = OTSMB.complete();   // replaced by the saved settings before the first case loads
 
   // ---------- banner ----------
   function ensureBar() {
@@ -88,9 +91,10 @@
     if (!on && bar) { bar.remove(); bar = null; closeFloating(); }
   }
 
-  const TITLE_MAX = 60;     // characters of the title shown; the full title is in its tooltip
-  const ACCOUNT_MAX = 32;
-  const cut = (text, max) => text.length > max ? text.slice(0, max - 1).trimEnd() + '…' : text;
+  const ACCOUNT_MAX = 32;   // characters of the account name shown; the full name is in its tooltip
+  // OTSM stores people as "Last, First"; the Names setting can turn that round
+  const person = n => { const m = settings.names === 'first' && /^([^,]+),\s*(.+)$/.exec(n || ''); return m ? `${m[2]} ${m[1]}` : (n || ''); };
+  const cut = (text, max) => max && text.length > max ? text.slice(0, max - 1).trimEnd() + '…' : text;
   const shortDate = ms => ms ? new Date(+ms).toLocaleString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit', hour: 'numeric', minute: '2-digit' }) : '';
 
   // One column of the banner: a small label over its value (the Salesforce case header layout)
@@ -98,38 +102,55 @@
     return el('div', { class: 'otsmb-col' + (cls ? ' ' + cls : '') }, el('div', { class: 'otsmb-label' }, label), el('div', { class: 'otsmb-value' }, ...value));
   }
 
+  // Each field's column; null leaves it out (Product Dev ID when the case has none)
+  const FIELD_RENDER = {
+    case: r => col('Case', null, el('span', { class: 'otsmb-id', title: 'Click to copy the case number', onclick: e => copy(e.currentTarget, r.Id) }, r.Id)),
+    title: r => { const t = r.DisplayLabel || ''; return col('Title', 'otsmb-grow', el('span', { class: 'otsmb-title', title: t }, cut(t, settings.titleMax))); },
+    priority: r => { const p = PRIORITY[r.Priority] || r.Priority || ''; return col('Priority', null, p ? el('span', { class: 'otsmb-pill otsmb-pr-' + p.toLowerCase() }, p) : ''); },
+    status: r => { const st = STATUS[r.Status] || r.Status || ''; return col('Status', null, st ? el('span', { class: 'otsmb-pill otsmb-st-' + (r.Status || '').replace(/[^A-Za-z]/g, '') }, st) : ''); },
+    owner: r => col('Owner', null, person(rel(r, 'OwnedByPerson', 'Name')) || '(none)'),
+    contact: r => { const n = person(rel(r, 'RequestedForPerson', 'Name'));
+      return col('Contact', null, r.RequestedForPerson ? hoverName(n || '(unknown)', n, personCard) : '(none)',
+        r.RequestedForPerson && iconButton('cases', "Contact's other cases", casesPopup)); },
+    account: r => { const n = rel(r, 'RequestToCompany', 'DisplayLabel');
+      return col('Account', null, r.RequestToCompany ? hoverName(cut(n || '(unknown)', ACCOUNT_MAX), n, companyCard) : '(none)',
+        r.RequestToCompany && iconButton('ents', "Account's entitlements", entitlementsPopup)); },
+    product: r => col('Product', null, rel(r, 'ProductModel_c', 'DisplayLabel') || '(none)'),
+    entitlement: r => { const e = rel(r, 'Entitlement', 'DisplayLabel');
+      return col('Entitlement', null, r.Entitlement ? el('a', { class: 'otsmb-link', href: recordUrl('Entitlement', r.Entitlement) }, e || r.Entitlement) : '(none)'); },
+    // Product Dev ID: each ID (some cases list several) links to its Quixy page
+    devid: r => { const ids = String(r.ProductDevID_c || '').split(/[\s,;]+/).filter(Boolean);
+      return ids.length ? col('Product Dev ID', null, ...ids.map(id => el('a', { class: 'otsmb-link', href: QUIXY + encodeURIComponent(id), target: '_blank', rel: 'noopener',
+        'skip-domain-check': '', title: `Open ${id} in Quixy` }, id))) : null; },
+    created: r => col('Created', null, shortDate(r.EmsCreationTime)),
+    updated: r => col('Updated', null, shortDate(r.LastUpdateTime)),
+  };
+
+  function applyColors(b) {
+    const c = OTSMB.palette(settings);
+    for (const k of ['bg', 'fg', 'label', 'icon', 'line']) b.style.setProperty('--otsmb-' + k, c[k]);
+  }
+
   function render() {
     const b = ensureBar();
+    applyColors(b);
     b.replaceChildren();
     const c = current;
     if (!c.req) {
       b.append(col('Case', null, el('span', { class: 'otsmb-id' }, c.id)),
         col('', 'otsmb-grow', el('span', { class: c.error ? 'otsmb-err' : 'otsmb-dim' }, c.error ? `Couldn't load the case: ${c.error}` : 'Loading…')),
-        refreshButton());
+        el('div', { class: 'otsmb-actions' }, refreshButton(), settingsButton()));
       return;
     }
     const r = c.req;
-    const status = STATUS[r.Status] || r.Status || '';
-    const prio = PRIORITY[r.Priority] || r.Priority || '';
-    const title = r.DisplayLabel || '';
-    const custName = rel(r, 'RequestedForPerson', 'Name');
-    const acctName = rel(r, 'RequestToCompany', 'DisplayLabel');
+    b.append(...settings.fields.filter(f => f.on && FIELD_RENDER[f.id]).map(f => FIELD_RENDER[f.id](r)).filter(Boolean),
+      el('div', { class: 'otsmb-actions' }, ...ftsLinks(r), refreshButton(), settingsButton()));
+  }
 
-    b.append(
-      col('Case', null, el('span', { class: 'otsmb-id', title: 'Click to copy the case number', onclick: e => copy(e.currentTarget, r.Id) }, r.Id)),
-      col('Title', 'otsmb-grow', el('span', { class: 'otsmb-title', title }, cut(title, TITLE_MAX))),
-      col('Priority', null, prio ? el('span', { class: 'otsmb-pill otsmb-pr-' + prio.toLowerCase() }, prio) : ''),
-      col('Status', null, status ? el('span', { class: 'otsmb-pill otsmb-st-' + (r.Status || '').replace(/[^A-Za-z]/g, '') }, status) : ''),
-      col('Owner', null, rel(r, 'OwnedByPerson', 'Name') || '(none)'),
-      col('Customer', null,
-        r.RequestedForPerson ? hoverName(custName || '(unknown)', custName, personCard) : '(none)',
-        r.RequestedForPerson && iconButton('cases', "Customer's other cases", casesPopup)),
-      col('Account', null,
-        r.RequestToCompany ? hoverName(cut(acctName || '(unknown)', ACCOUNT_MAX), acctName, companyCard) : '(none)',
-        r.RequestToCompany && iconButton('ents', "Account's entitlements", entitlementsPopup)),
-      col('Created', null, shortDate(r.EmsCreationTime)),
-      col('Updated', null, shortDate(r.LastUpdateTime)),
-      el('div', { class: 'otsmb-actions' }, ftsLink(r), refreshButton()));
+  // The Options page can only be opened by the extension's service worker
+  function settingsButton() {
+    if (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.sendMessage) return null;
+    return el('button', { class: 'otsmb-icon', type: 'button', title: 'Banner settings', html: ICON.gear, onclick: () => chrome.runtime.sendMessage({ openOptions: true }) });
   }
 
   function refreshButton() {
@@ -140,24 +161,28 @@
       onclick: e => { e.stopPropagation(); toggleFloating(e.currentTarget, open, true, true); } });
   }
 
-  // A name that shows a contact card on hover; a click keeps it open
+  // A name that shows a contact card on hover (if that setting is on); a click keeps it open
   function hoverName(text, full, build) {
     const n = el('span', { class: 'otsmb-name', tabindex: '0', title: full !== text ? full : null }, text);
-    n.addEventListener('mouseenter', () => { clearTimeout(hoverTimer); hoverTimer = setTimeout(() => { if (!floating || !floating.pinned) openFloating(n, build, false); }, 250); });
-    n.addEventListener('mouseleave', () => { clearTimeout(hoverTimer); hoverTimer = setTimeout(() => { if (floating && !floating.pinned && !floating.box.matches(':hover')) closeFloating(); }, 300); });
+    n.addEventListener('mouseenter', () => { if (!settings.cardsOnHover) return; clearTimeout(hoverTimer); hoverTimer = setTimeout(() => { if (!floating || !floating.pinned) openFloating(n, build, false); }, 250); });
+    n.addEventListener('mouseleave', () => { if (!settings.cardsOnHover) return; clearTimeout(hoverTimer); hoverTimer = setTimeout(() => { if (floating && !floating.pinned && !floating.box.matches(':hover')) closeFloating(); }, 300); });
     n.addEventListener('click', e => { e.stopPropagation(); clearTimeout(hoverTimer); toggleFloating(n, build, true); });
     n.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); toggleFloating(n, build, true); } });
     return n;
   }
 
-  // FTS host account in WinSCP (winscp-ftp:// opens WinSCP rather than another FTP handler). skip-domain-check: SMAX's
+  // FTS accounts in WinSCP (winscp-ftp:// opens WinSCP rather than another FTP handler). skip-domain-check: SMAX's
   // "External link navigation" warning (platform.js, click handler on body) skips links with that attribute.
-  function ftsLink(r) {
-    if (!r.FTSHostAccount_c || !r.FTSHostPassword_c) return el('span', { class: 'otsmb-dim', title: 'This case has no FTS account' }, 'No FTS');
+  function ftsLinks(r) {
     let host = FTS_HOST;
     try { if (r.FTSLogin_c) host = new URL(r.FTSLogin_c).host; } catch (e) { /* keep the default */ }
-    const url = `winscp-ftp://${encodeURIComponent(r.FTSHostAccount_c)}:${encodeURIComponent(r.FTSHostPassword_c)}@${host}/`;
-    return el('a', { class: 'otsmb-btn', href: url, 'skip-domain-check': '', title: `Open ${host} in WinSCP as ${r.FTSHostAccount_c}` }, 'FTS');
+    const both = settings.fts === 'both';
+    const accounts = [];
+    if (settings.fts !== 'customer') accounts.push({ user: r.FTSHostAccount_c, pass: r.FTSHostPassword_c, text: both ? 'FTS host' : 'FTS', what: 'host account' });
+    if (settings.fts !== 'host') accounts.push({ user: r.FTSCustAccount_c, pass: r.FTSCustPassword_c, text: both ? 'FTS customer' : 'FTS', what: 'customer account' });
+    const links = accounts.filter(a => a.user && a.pass).map(a => el('a', { class: 'otsmb-btn', href: `winscp-ftp://${encodeURIComponent(a.user)}:${encodeURIComponent(a.pass)}@${host}/`,
+      'skip-domain-check': '', title: `Open ${host} in WinSCP with the FTS ${a.what} ${a.user}` }, a.text));
+    return links.length ? links : [el('span', { class: 'otsmb-dim', title: 'This case has no FTS account' }, 'No FTS')];
   }
 
   function copy(node, text) {
@@ -210,7 +235,7 @@
     if (!current.person) current.person = await getOne('Person', id, 'Name,FirstName,LastName,Email,OfficePhoneNumber,MobilePhoneNumber,HomePhoneNumber,TimeZone,Location.DisplayLabel,IsVIP,EmployeeStatus');
     const p = current.person;
     return el('div', null,
-      el('div', { class: 'otsmb-card-title' }, p.Name || '', p.IsVIP ? el('span', { class: 'otsmb-pill otsmb-vip' }, 'VIP') : null),
+      el('div', { class: 'otsmb-card-title' }, person(p.Name), p.IsVIP ? el('span', { class: 'otsmb-pill otsmb-vip' }, 'VIP') : null),
       el('table', { class: 'otsmb-card' }, el('tbody', null,
         line('Email', p.Email && el('a', { href: 'mailto:' + p.Email }, p.Email)),
         line('Office', tel(p.OfficePhoneNumber)),
@@ -235,7 +260,7 @@
         line('Type', co.CompanyType))));
   }
 
-  // The customer's other cases, or the whole account's
+  // The contact's other cases, or the whole account's
   async function casesPopup() {
     const r = current.req;
     const wrap = el('div');
@@ -245,15 +270,15 @@
       const { rows, total } = await getList('Request', filter,
         'Id,DisplayLabel,Status,Priority,OwnedByPerson.Name,RequestedForPerson.Name,EmsCreationTime', 'EmsCreationTime desc');
       const tabs = el('div', { class: 'otsmb-tabs' },
-        ['customer', 'account'].map(s => el('button', { type: 'button', class: s === scope ? 'otsmb-on' : '', onclick: () => show(s).catch(err => wrap.replaceChildren(el('div', { class: 'otsmb-err' }, err.message))) },
-          s === 'customer' ? 'This customer' : 'Whole account')));
-      const head = ['Case', 'Title', 'Status', 'Owner'].concat(scope === 'account' ? ['Customer'] : [], ['Created']);
+        ['contact', 'account'].map(s => el('button', { type: 'button', class: s === scope ? 'otsmb-on' : '', onclick: () => show(s).catch(err => wrap.replaceChildren(el('div', { class: 'otsmb-err' }, err.message))) },
+          s === 'contact' ? `Contact: ${cut(person(rel(r, 'RequestedForPerson', 'Name')) || '(unknown)', 30)}` : `Account: ${cut(rel(r, 'RequestToCompany', 'DisplayLabel') || '(unknown)', 30)}`)));
+      const head = ['Case', 'Title', 'Status', 'Owner'].concat(scope === 'account' ? ['Contact'] : [], ['Created']);
       const body = rows.map(x => el('tr', { class: (x.Id === r.Id ? 'otsmb-current ' : '') + (CLOSED.includes(x.Status) ? 'otsmb-closed' : '') },
         el('td', null, el('a', { href: recordUrl('Request', x.Id) }, x.Id)),
         el('td', { class: 'otsmb-wrap' }, x.DisplayLabel || ''),
         el('td', null, STATUS[x.Status] || x.Status || ''),
-        el('td', null, rel(x, 'OwnedByPerson', 'Name')),
-        scope === 'account' ? el('td', null, rel(x, 'RequestedForPerson', 'Name')) : null,
+        el('td', null, person(rel(x, 'OwnedByPerson', 'Name'))),
+        scope === 'account' ? el('td', null, person(rel(x, 'RequestedForPerson', 'Name'))) : null,
         el('td', null, x.EmsCreationTime ? new Date(+x.EmsCreationTime).toLocaleDateString('en-US') : '')));
       const open = rows.filter(x => !CLOSED.includes(x.Status)).length;
       wrap.replaceChildren(tabs,
@@ -261,7 +286,7 @@
         el('div', { class: 'otsmb-scroll' }, table(head, body)));
       if (floating) { const f = floating.box; f.style.left = Math.max(8, Math.min(parseFloat(f.style.left), window.innerWidth - f.offsetWidth - 8)) + 'px'; }
     };
-    await show('customer');
+    await show(settings.casesTab === 'account' && r.RequestToCompany ? 'account' : 'contact');
     return wrap;
   }
 
@@ -285,7 +310,7 @@
     const product = x => rel(x, 'ProductModel_c', 'DisplayLabel');
     // In use first, then the latest end date, then product
     const rows = [...byId.values()].sort((a, b) => (inUse(b) - inUse(a)) || ((+b.EndDate_c || 0) - (+a.EndDate_c || 0)) || product(a).localeCompare(product(b)));
-    const contact = rel(r, 'RequestedForPerson', 'Name') || 'the contact';
+    const contact = person(rel(r, 'RequestedForPerson', 'Name')) || 'the contact';
     const body = rows.map(x => {
       const expired = x.EndDate_c && +x.EndDate_c < now;
       const other = x.OwnerCompany && x.OwnerCompany !== r.RequestToCompany;
@@ -308,8 +333,8 @@
 
   // ---------- loading and page watching ----------
   const CASE_LAYOUT = 'Id,DisplayLabel,Status,Priority,EmsCreationTime,LastUpdateTime,OwnedByPerson.Name,' +
-    'RequestedForPerson,RequestedForPerson.Name,RequestToCompany,RequestToCompany.DisplayLabel,Entitlement,' +
-    'OverrideEntitlement_c,FTSHostAccount_c,FTSHostPassword_c,FTSLogin_c';
+    'RequestedForPerson,RequestedForPerson.Name,RequestToCompany,RequestToCompany.DisplayLabel,Entitlement,Entitlement.DisplayLabel,' +
+    'ProductModel_c.DisplayLabel,ProductDevID_c,OverrideEntitlement_c,FTSHostAccount_c,FTSHostPassword_c,FTSCustAccount_c,FTSCustPassword_c,FTSLogin_c';
 
   async function load(id, again) {
     const mine = ++token;
@@ -333,7 +358,11 @@
     if (!current || current.id !== id) load(id);
     else if (!bar || !document.body.contains(bar)) render();   // the page replaced <body> contents
   }
-  setInterval(check, 700);   // SMAX changes cases without reloading the page
-  window.addEventListener('focus', () => { if (current && current.loadedAt && Date.now() - current.loadedAt > 60000) load(current.id, true); });
-  check();
+  OTSMB.onChange(s => { settings = s; if (current && bar) render(); });   // Options page changes show at once
+  OTSMB.load().then(s => {
+    settings = s;
+    setInterval(check, 700);   // SMAX changes cases without reloading the page
+    window.addEventListener('focus', () => { if (current && current.loadedAt && Date.now() - current.loadedAt > 60000) load(current.id, true); });
+    check();
+  });
 })();

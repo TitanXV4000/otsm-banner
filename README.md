@@ -1,21 +1,34 @@
 # OTSM case banner
 
-A Chrome/Edge extension that adds a one-line banner, in OTSM's header navy, to the top of every OTSM (SMAX) case page
+A Chrome/Edge extension that adds a one-line banner to the top of every OTSM (SMAX) case page
 (`https://us42-smax.saas.microfocus.com/saw/Request/<id>/...`). The layout follows the old Salesforce case header,
-with a small label over each value:
+with a small label over each value.
 
-- **Case** (click to copy), **Title** (first 60 characters; hover for all of it), **Priority** and **Status** badges, **Owner**,
-  **Customer**, **Account**, **Created**, **Updated**.
-- **Customer** and **Account** names: hover for a contact card (email, phones, time zone with the local time there, location;
+- Fields (choose which and their order in the settings): **Case** (click to copy), **Title** (shortened; hover for all of it),
+  **Priority** and **Status** badges, **Owner**, **Contact**, **Account**, **Product**, **Entitlement** (support plan, links to it),
+  **Product Dev ID** (only when the case has one; each ID links to its Quixy page), **Created**, **Updated**.
+- **Contact** and **Account** names: hover for a contact card (email, phones, time zone with the local time there, location;
   account number, region, headquarters). Click to keep it open.
-- Case icon next to the customer: their other cases, or the whole account's, newest first, with links. The current case
-  is highlighted and closed cases are greyed.
-- Shield icon next to the account: its entitlements. Columns: entitlement number (link), product, support plan,
-  contract, start, end and state, with a ✓ first when the case's contact is one of the entitlement's **Entitled users**.
-  In-use entitlements are listed first, then the latest end date. The case's own entitlement is highlighted.
-  Entitlements another company delegated to this account are included and say who owns them.
-- **FTS**: opens the case's FTS host account in WinSCP (`winscp-ftp://` link; WinSCP must be installed).
-- Refresh button. The banner also reloads when you come back to the tab after a minute or more.
+- Case icon next to the contact: other cases, on a "Contact: <name>" or "Account: <name>" tab, newest first, with links.
+  The current case is highlighted and closed cases are greyed.
+- Shield icon next to the account: its entitlements. Columns: Contact (✓ when the case's contact is one of the entitlement's
+  **Entitled users**), entitlement number (link), product, support plan, contract, start, end and state. In-use entitlements
+  are listed first, then the latest end date. The case's own entitlement is highlighted (or the heading says the case has
+  none). Entitlements owned by another company (delegated, or the contact's) are included and say who owns them.
+- **FTS**: opens the case's FTS account in WinSCP (`winscp-ftp://` link; WinSCP must be installed). The link carries
+  `skip-domain-check`, so SMAX's "External link navigation" warning doesn't appear; Chrome still asks before opening an app.
+- Refresh and ⚙ (settings) buttons. The banner also reloads when you come back to the tab after a minute or more.
+
+## Settings
+⚙ on the banner, or right-click the extension's icon > Options. Saved in the browser profile (`chrome.storage.sync`);
+open banners redraw straight away.
+- Fields: show/hide and order (drag or arrows).
+- Colours: OTSM navy (default), Light, Dark grey, High contrast, or custom background/text.
+- Title length: 40, 60 (default), 80 characters or the full title.
+- Contact cards: open on hover (default) or on click only.
+- Other cases popup opens on the Contact (default) or Account tab.
+- Names: First Last (default) or Last, First (as OTSM stores them).
+- FTS button: host account (default), customer account, or both.
 
 All data comes from the SMAX EMS REST API (`/rest/<tenant>/ems/...`) with your own browser login, so it only shows what
 your OTSM account can see. Nothing is stored or sent anywhere else. API notes: `qmon/notes/otsm-api.md`
@@ -30,7 +43,9 @@ your OTSM account can see. Nothing is stored or sent anywhere else. API notes: `
 To update, replace the folder with the new one and click the reload arrow on the extension's card.
 
 ## Layout
-- `extension/manifest.json`: Manifest V3. One content script, only on the SMAX `/saw/` pages.
+- `extension/manifest.json`: Manifest V3. One content script (`settings.js` + `banner.js`), only on the SMAX `/saw/` pages;
+  `storage` permission for the settings; `background.js` only opens the Options page for the ⚙ button.
+- `extension/settings.js`: the fields, colour presets and defaults, shared by the banner and `options.html`/`options.js`.
 - `extension/banner.js`: finds the case id in the URL. SMAX changes cases without reloading, so it checks every 0.7 s.
   It then loads the case and loads the contact cards and popups when they're opened.
 - `extension/banner.css`: styles, all prefixed `otsmb`. Entitled users are the `EntitlementToViewCaseUsers` relation (a contact's: `Person/<id>/associations/ViewCaseUsersToEntitlement`).
@@ -38,7 +53,9 @@ To update, replace the folder with the new one and click the reload arrow on the
   bars (`.navbar-fixed-top` and `.pl-entity-page-minimized-header`). If SMAX renames those, its header ends up under the banner.
 
 ## Test
-`test/shot.js` logs in to OTSM with the qmon service account (headless Chrome in the smexporter image), opens a case,
+`test/options-test.js` opens the Options page from the folder (no extension APIs, so defaults and no saving) and tries
+the tick boxes, arrows, drag and colours. `test/shot.js` takes `SETTINGS='<json>'` to try settings on a real case, and
+`WIDTH` for the window width. `test/shot.js` logs in to OTSM with the qmon service account (headless Chrome in the smexporter image), opens a case,
 injects the banner and takes screenshots of each popup. `test/layout.js` lists SMAX's fixed elements. Both need the qmon
 repo's `test/api-poc/common.js`. The screenshots hold real case data, so they go to the gitignored `qmon/data/`:
 

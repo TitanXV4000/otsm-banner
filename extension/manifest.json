@@ -1,12 +1,15 @@
 {
   "manifest_version": 3,
   "name": "OTSM case banner",
-  "version": "1.1.6",
-  "description": "Case number, title, status, customer, account, owner and dates at the top of every OTSM (SMAX) case, with the customer's other cases, the account's entitlements and a WinSCP link.",
+  "version": "1.2.0",
+  "description": "Case number, title, priority, status, contact, account, owner and dates at the top of every OTSM (SMAX) case, with the contact's other cases, the account's entitlements and FTS in WinSCP.",
+  "permissions": ["storage"],
+  "options_ui": { "page": "options.html", "open_in_tab": true },
+  "background": { "service_worker": "background.js" },
   "content_scripts": [
     {
       "matches": ["https://us42-smax.saas.microfocus.com/saw/*"],
-      "js": ["banner.js"],
+      "js": ["settings.js", "banner.js"],
       "css": ["banner.css"],
       "run_at": "document_idle"
     }
