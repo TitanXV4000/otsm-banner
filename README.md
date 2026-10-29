@@ -84,7 +84,8 @@ https://trevman.com/otsm-banner/ (HostMonster). Source in `site/`: `test/demo.js
 from the real banner code with made-up API answers (no real case data), then `site/build.sh` builds `dist/` (the page with
 the version filled in, the screenshots and `otsm-banner-<version>.zip`); `site/deploy.sh` builds and uploads it
 (ssh tsanford@trevman.com with phoenix's key, `~/www/trevman/otsm-banner/`) and checks every file is served. Older
-zips stay on the site.
+zips stay on the site. For each release, add its entry to the Changelog tab in `site/index.html` (newest first;
+test builds like 1.7.0.1 are not listed).
 
 ## Firefox
 The same code runs in Firefox (128 or later). `site/build.sh` also makes `dist/otsm-banner-<version>-firefox.zip`:
