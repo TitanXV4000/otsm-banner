@@ -20,7 +20,9 @@ with a small label over each value.
   **Entitled users**), entitlement number (link), product, support plan, contract, start, end and state. In-use entitlements
   are listed first, then the latest end date. The case's own entitlement is highlighted (or the heading says the case has
   none). Entitlements owned by another company (delegated, or the contact's) are included and say who owns them.
-- **FTS**: opens the case's FTS account in WinSCP (`winscp-ftp://` link) or, by setting, the default FTP app (`ftp://`).
+- **FTS**: opens the case's FTS account in WinSCP (`winscp-ftp://` link) or, by setting, FileZilla (`filezilla-ftp://`, after
+  running `extras/filezilla-setup.reg` once: Windows 11 won't offer FileZilla as the default app for `ftp://` links) or the
+  default FTP app (`ftp://`).
   The copy icon next to it copies the `ftp://user:password@host/` URL for FileZilla or any other FTP program. The link carries
   `skip-domain-check`, so SMAX's "External link navigation" warning doesn't appear; Chrome still asks before opening an app.
 - A ⚙ (settings) button. The banner reloads with SMAX's own Refresh button on the case, and when you come back to the tab after a minute or more.
@@ -36,7 +38,7 @@ open banners redraw straight away.
 - Names: First Last (default) or Last, First (as OTSM stores them).
 - Phone numbers open in the default phone app (`tel:`, default) or Cisco Jabber (`ciscotel:`).
 - FTS button: host account (default), customer account, or both (small Host and Cust buttons under an FTS label).
-- FTS opens in: WinSCP (default) or the default FTP app (`ftp://` link).
+- FTS opens in: WinSCP (default), FileZilla (needs `extras/filezilla-setup.reg`) or the default FTP app (`ftp://` link).
 
 All data comes from the SMAX EMS REST API (`/rest/<tenant>/ems/...`) with your own browser login, so it only shows what
 your OTSM account can see. Nothing is stored or sent anywhere else. API notes: `qmon/notes/otsm-api.md`

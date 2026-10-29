@@ -1,0 +1,25 @@
+Windows Registry Editor Version 5.00
+
+; One-time setup for the OTSM case banner's "FTS opens in: FileZilla" setting (current user only; no admin needed).
+; It adds a filezilla-ftp:// link type that starts FileZilla with the FTS login as an ftp:// URL. (Windows won't let
+; FileZilla be chosen as the default app for ftp:// links, so the banner uses its own link type.)
+; PowerShell turns filezilla-ftp:// into ftp:// for FileZilla, so a console window may flash for a moment.
+; Assumes FileZilla is in C:\Program Files\FileZilla FTP Client; change the path below if yours is elsewhere.
+; It also removes what the earlier filezilla-ftp-links.reg added.
+; To undo: delete HKEY_CURRENT_USER\Software\Classes\filezilla-ftp.
+
+[-HKEY_CURRENT_USER\Software\Classes\ftp]
+[-HKEY_CURRENT_USER\Software\Classes\FileZilla.ftp]
+[-HKEY_CURRENT_USER\Software\OTSM banner]
+[HKEY_CURRENT_USER\Software\RegisteredApplications]
+"FileZilla (ftp links)"=-
+
+[HKEY_CURRENT_USER\Software\Classes\filezilla-ftp]
+@="URL:FTS in FileZilla"
+"URL Protocol"=""
+
+[HKEY_CURRENT_USER\Software\Classes\filezilla-ftp\DefaultIcon]
+@="\"C:\\Program Files\\FileZilla FTP Client\\filezilla.exe\",0"
+
+[HKEY_CURRENT_USER\Software\Classes\filezilla-ftp\shell\open\command]
+@="C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -NoProfile -WindowStyle Hidden -Command \"& 'C:\\Program Files\\FileZilla FTP Client\\filezilla.exe' ('%1' -replace '^filezilla-ftp:', 'ftp:')\""
