@@ -130,12 +130,21 @@
     entitlement: r => { const e = rel(r, 'Entitlement', 'DisplayLabel');
       return col('Entitlement', null, r.Entitlement ? el('a', { class: 'otsmb-link', href: recordUrl('Entitlement', r.Entitlement) }, e || r.Entitlement) : '(none)'); },
     // Product Dev ID: each ID (some cases list several) links to its Quixy page
+    // Quixy is on a private address (10.x), so a link from the OTSM page (public) makes Chrome ask for "local network
+    // access"; the extension's service worker opens it in a new tab instead, and the ID has no href for Chrome to connect to
     devid: r => { const ids = String(r.ProductDevID_c || '').split(/[\s,;]+/).filter(Boolean);
-      return ids.length ? col('Product Dev ID', null, ...ids.map(id => el('a', { class: 'otsmb-link', href: QUIXY + encodeURIComponent(id), target: '_blank', rel: 'noopener',
-        'skip-domain-check': '', title: `Open ${id} in Quixy` }, id))) : null; },
+      return ids.length ? col('Product Dev ID', null, ...ids.map(id => el('a', { class: 'otsmb-link', role: 'link', tabindex: '0', title: `Open ${id} in Quixy`,
+        onclick: e => { e.preventDefault(); openQuixy(id); }, onauxclick: e => { if (e.button === 1) { e.preventDefault(); openQuixy(id); } },
+        onkeydown: e => { if (e.key === 'Enter') openQuixy(id); } }, id))) : null; },
     created: r => col('Created', null, shortDate(r.EmsCreationTime)),
     updated: r => col('Updated', null, shortDate(r.LastUpdateTime)),
   };
+
+  function openQuixy(id) {
+    const url = QUIXY + encodeURIComponent(id);
+    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) chrome.runtime.sendMessage({ openQuixy: id });
+    else window.open(url, '_blank', 'noopener');   // the headless tests, which have no extension
+  }
 
   function applyColors(b) {
     const c = OTSMB.palette(settings);

@@ -23,7 +23,7 @@ html.otsmb-on .pl-entity-page-minimized-header { top: calc(56px + var(--otsmb-h)
 #otsmb .otsmb-id { font-weight: 700; font-size: 14px; cursor: copy; }
 #otsmb .otsmb-copied { opacity: .55; }
 #otsmb .otsmb-copyable { cursor: copy; }
-#otsmb a.otsmb-link { color: inherit; border-bottom: 1px dotted var(--otsmb-icon, #8cc4ff); text-decoration: none; }
+#otsmb a.otsmb-link { color: inherit; border-bottom: 1px dotted var(--otsmb-icon, #8cc4ff); text-decoration: none; cursor: pointer; }
 #otsmb .otsmb-title { font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
 #otsmb .otsmb-actions { margin-left: auto; display: flex; align-items: center; gap: 6px; flex: none; }
 #otsmb .otsmb-dim { color: var(--otsmb-label, #9db4cc); }

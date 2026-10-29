@@ -8,7 +8,8 @@ with a small label over each value.
 
 - Fields (choose which and their order in the settings): **Case** (click to copy), **Title** (shortened; hover for all of it),
   **Priority** and **Status** badges, **Owner**, **Contact**, **Account**, **Product**, **Entitlement** (support plan, links to it),
-  **Product Dev ID** (only when the case has one; each ID links to its Quixy page), **Created**, **Updated**.
+  **Product Dev ID** (only when the case has one; each ID opens its Quixy page in a new tab, opened by the extension: Quixy is
+  on a private address, and a link from the OTSM page made Chrome ask for "local network access"), **Created**, **Updated**.
 - **Contact** and **Account** names: hover for a contact card (email, phones, time zone with the local time there, location;
   account number, region, headquarters). Click to keep it open. The name at the top of a card opens the contact's or
   account's page in OTSM. The account card also lists the **Support team** from the entitlement fields (TAM, SAM, Accountable
