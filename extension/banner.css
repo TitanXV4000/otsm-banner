@@ -1,0 +1,62 @@
+/* OTSM case banner. Everything is prefixed otsmb so it can't clash with SMAX's own styles. */
+#otsmb {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1035;
+  height: var(--otsmb-h); box-sizing: border-box; padding: 4px 12px;
+  display: flex; flex-direction: column; justify-content: center; gap: 3px;
+  background: #fff8e1; border-bottom: 2px solid #e8b400; color: #1d2733;
+  font: 13px/1.35 "Segoe UI", Roboto, Arial, sans-serif; box-shadow: 0 2px 4px rgba(0,0,0,.12);
+}
+html.otsmb-on { --otsmb-h: 56px; }
+/* Push SMAX down below the banner: the page itself, its fixed navy header and the compact case header it shows once scrolled */
+html.otsmb-on body { padding-top: var(--otsmb-h) !important; }
+html.otsmb-on .navbar-fixed-top { top: var(--otsmb-h) !important; }
+html.otsmb-on .pl-entity-page-minimized-header { top: calc(56px + var(--otsmb-h)) !important; }
+
+#otsmb .otsmb-row { display: flex; align-items: center; gap: 14px; white-space: nowrap; min-width: 0; }
+#otsmb .otsmb-spacer { flex: 1; }
+#otsmb .otsmb-id { font-weight: 700; font-size: 15px; cursor: copy; }
+#otsmb .otsmb-copied { color: #1b7f3b; }
+#otsmb .otsmb-title { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; min-width: 120px; flex: 0 1 auto; }
+#otsmb .otsmb-field { display: inline-flex; align-items: center; gap: 4px; min-width: 0; }
+#otsmb .otsmb-field b { font-weight: 600; color: #5a6470; }
+#otsmb a { color: #0b5cad; text-decoration: none; }
+#otsmb a:hover { text-decoration: underline; }
+#otsmb .otsmb-name { color: #0b5cad; cursor: pointer; border-bottom: 1px dotted #0b5cad; overflow: hidden; text-overflow: ellipsis; }
+#otsmb .otsmb-icon { border: 0; background: none; padding: 2px; color: #0b5cad; cursor: pointer; display: inline-flex; border-radius: 4px; }
+#otsmb .otsmb-icon:hover { background: rgba(11,92,173,.12); }
+#otsmb .otsmb-btn { background: #0b5cad; color: #fff; padding: 2px 10px; border-radius: 4px; font-weight: 600; }
+#otsmb .otsmb-btn:hover { background: #084a8c; text-decoration: none; }
+
+.otsmb-dim { color: #6b7480; }
+.otsmb-err { color: #b3261e; }
+.otsmb-pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; background: #e3e7ec; color: #1d2733; }
+.otsmb-st-RequestStatusInProgress { background: #d6e8fb; color: #0b4a8a; }
+.otsmb-st-RequestStatusReady, .otsmb-st-RequestStatusNeedsAttentionc { background: #fde2c4; color: #8a4a00; }
+.otsmb-st-RequestStatusPending, .otsmb-st-RequestStatusPendingInternalc, .otsmb-st-RequestStatusSuspended { background: #ece2f7; color: #5b2d8e; }
+.otsmb-st-RequestStatusComplete, .otsmb-st-RequestStatusClosedc { background: #dcefe0; color: #1b6b34; }
+.otsmb-pr-critical { background: #b3261e; color: #fff; }
+.otsmb-pr-high { background: #f6c9c5; color: #8c1d18; }
+.otsmb-vip { background: #e8b400; color: #1d2733; margin-left: 6px; }
+
+/* Popups and contact cards */
+.otsmb-float {
+  position: fixed; z-index: 1045; max-width: 760px; min-width: 260px; max-height: 70vh; overflow: auto;
+  background: #fff; color: #1d2733; border: 1px solid #c4cad1; border-radius: 6px; padding: 10px 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,.2); font: 13px/1.4 "Segoe UI", Roboto, Arial, sans-serif;
+}
+.otsmb-float.otsmb-pinned { border-color: #0b5cad; }
+.otsmb-float a { color: #0b5cad; text-decoration: none; }
+.otsmb-float a:hover { text-decoration: underline; }
+.otsmb-card-title { font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+.otsmb-card th { text-align: left; color: #5a6470; font-weight: 600; padding: 2px 12px 2px 0; vertical-align: top; white-space: nowrap; }
+.otsmb-card td { padding: 2px 0; user-select: text; }
+.otsmb-scroll { max-height: calc(70vh - 80px); overflow: auto; }
+.otsmb-table { border-collapse: collapse; width: 100%; }
+.otsmb-table th { position: sticky; top: 0; background: #f1f3f5; text-align: left; font-weight: 600; padding: 4px 8px; white-space: nowrap; }
+.otsmb-table td { padding: 3px 8px; border-top: 1px solid #e6e9ec; white-space: nowrap; }
+.otsmb-table td.otsmb-wrap { white-space: normal; min-width: 220px; }
+.otsmb-table tr.otsmb-current td { background: #fff3c4; font-weight: 600; }
+.otsmb-table tr.otsmb-closed td { color: #8a929b; }
+.otsmb-tabs { display: flex; gap: 4px; margin-bottom: 8px; }
+.otsmb-tabs button { border: 1px solid #c4cad1; background: #fff; border-radius: 4px; padding: 2px 10px; cursor: pointer; font: inherit; }
+.otsmb-tabs button.otsmb-on { background: #0b5cad; border-color: #0b5cad; color: #fff; }
