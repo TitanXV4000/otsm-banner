@@ -37,6 +37,7 @@ var OTSMB = (() => {
     casesTab: 'contact',       // the cases popup opens on 'contact' or 'account'
     fts: 'host',               // 'host', 'customer' or 'both'
     names: 'first',            // people's names as 'first' (First Last) or 'last' (Last, First, as OTSM stores them)
+    phone: 'tel',              // phone numbers open 'tel' (the default phone app) or 'jabber' (Cisco Jabber, ciscotel:)
   };
 
   // Saved settings over the defaults. Fields: saved order first, then any field added since (in its default place).

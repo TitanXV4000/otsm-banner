@@ -45,6 +45,7 @@ html.otsmb-on .pl-entity-page-minimized-header { top: calc(56px + var(--otsmb-h)
 .otsmb-pr-critical { background: #b3261e; color: #fff; }
 .otsmb-pr-high { background: #f6c9c5; color: #8c1d18; }
 .otsmb-vip { background: #e8b400; color: #1d2733; margin-left: 6px; }
+.otsmb-follow { background: #e0ecf8; color: #0b4a8a; font-size: 11px; padding: 0 6px; }
 
 /* Popups and contact cards */
 .otsmb-float {
@@ -59,6 +60,8 @@ html.otsmb-on .pl-entity-page-minimized-header { top: calc(56px + var(--otsmb-h)
 .otsmb-float a { color: #0b5cad; text-decoration: none; }
 .otsmb-float a:hover { text-decoration: underline; }
 .otsmb-card-title { font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+.otsmb-team { margin-top: 8px; padding-top: 8px; border-top: 1px solid #e6e9ec; }
+.otsmb-card-sub { font-weight: 700; margin-bottom: 4px; }
 .otsmb-card th { text-align: left; color: #5a6470; font-weight: 600; padding: 2px 12px 2px 0; vertical-align: top; white-space: nowrap; }
 .otsmb-card td { padding: 2px 0; user-select: text; }
 .otsmb-scroll { max-height: calc(70vh - 80px); overflow: auto; }

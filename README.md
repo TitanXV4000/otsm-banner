@@ -8,9 +8,13 @@ with a small label over each value.
   **Priority** and **Status** badges, **Owner**, **Contact**, **Account**, **Product**, **Entitlement** (support plan, links to it),
   **Product Dev ID** (only when the case has one; each ID links to its Quixy page), **Created**, **Updated**.
 - **Contact** and **Account** names: hover for a contact card (email, phones, time zone with the local time there, location;
-  account number, region, headquarters). Click to keep it open.
+  account number, region, headquarters). Click to keep it open. The name at the top of a card opens the contact's or
+  account's page in OTSM. The account card also lists the **Support team** from the entitlement fields (TAM, SAM, Accountable
+  Premium Manager, Enterprise Support Manager, assignment group): the case's entitlement, or the account's in-use ones when
+  that has none. Phone numbers open the default phone app or Jabber (setting).
 - Case icon next to the contact: other cases, on a "Contact: <name>" or "Account: <name>" tab, newest first, with links.
-  The current case is highlighted and closed cases are greyed.
+  The current case is highlighted and closed cases are greyed. The contact tab includes cases the contact follows
+  (SMAX FollowedByUsers; their portal lists them too), marked Following with that case's contact and account.
 - Shield icon next to the account: its entitlements. Columns: Contact (✓ when the case's contact is one of the entitlement's
   **Entitled users**), entitlement number (link), product, support plan, contract, start, end and state. In-use entitlements
   are listed first, then the latest end date. The case's own entitlement is highlighted (or the heading says the case has
@@ -28,6 +32,7 @@ open banners redraw straight away.
 - Contact cards: open on hover (default) or on click only.
 - Other cases popup opens on the Contact (default) or Account tab.
 - Names: First Last (default) or Last, First (as OTSM stores them).
+- Phone numbers open in the default phone app (`tel:`, default) or Cisco Jabber (`ciscotel:`).
 - FTS button: host account (default), customer account, or both (small Host and Cust buttons under an FTS label).
 
 All data comes from the SMAX EMS REST API (`/rest/<tenant>/ems/...`) with your own browser login, so it only shows what

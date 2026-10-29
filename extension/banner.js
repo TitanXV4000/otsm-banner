@@ -27,6 +27,8 @@
   const tenant = () => new URLSearchParams(location.search).get('TENANTID') || DEFAULT_TENANT;
   const caseIdFromUrl = () => (location.pathname.match(/^\/saw\/Request\/(\d+)/) || [])[1] || null;
   const recordUrl = (entity, id) => `/saw/${entity}/${id}/general?TENANTID=${tenant()}`;
+  const personUrl = id => `/admin/people/persons/details/${id}/general?TENANTID=${tenant()}`;
+  const companyUrl = id => `/saw/Company/details/${id}/general?TENANTID=${tenant()}`;
 
   function el(tag, attrs, ...kids) {
     const n = document.createElement(tag);
@@ -232,7 +234,9 @@
   function line(label, ...value) {
     return value.some(v => v) ? el('tr', null, el('th', null, label), el('td', null, ...value)) : null;
   }
-  const tel = n => n ? el('a', { href: 'tel:' + String(n).replace(/[^0-9+]/g, '') }, n) : null;
+  // Phone numbers open the default phone app (tel:) or Jabber (ciscotel:); skip-domain-check stops SMAX's external link warning
+  const tel = n => n ? el('a', { href: (settings.phone === 'jabber' ? 'ciscotel:' : 'tel:') + String(n).replace(/[^0-9+]/g, ''), 'skip-domain-check': '',
+    title: settings.phone === 'jabber' ? 'Call with Jabber' : 'Call' }, n) : null;
   const zone = tz => tz ? [tz, el('span', { class: 'otsmb-dim' }, ` (now ${localTime(tz)})`)] : null;
 
   async function personCard() {
@@ -240,7 +244,7 @@
     if (!current.person) current.person = await getOne('Person', id, 'Name,FirstName,LastName,Email,OfficePhoneNumber,MobilePhoneNumber,HomePhoneNumber,TimeZone,Location.DisplayLabel,IsVIP,EmployeeStatus');
     const p = current.person;
     return el('div', null,
-      el('div', { class: 'otsmb-card-title' }, person(p.Name), p.IsVIP ? el('span', { class: 'otsmb-pill otsmb-vip' }, 'VIP') : null),
+      el('div', { class: 'otsmb-card-title' }, el('a', { href: personUrl(id), title: 'Open the contact in OTSM' }, person(p.Name)), p.IsVIP ? el('span', { class: 'otsmb-pill otsmb-vip' }, 'VIP') : null),
       el('table', { class: 'otsmb-card' }, el('tbody', null,
         line('Email', p.Email && el('a', { href: 'mailto:' + p.Email }, p.Email)),
         line('Office', tel(p.OfficePhoneNumber)),
@@ -254,15 +258,58 @@
   async function companyCard() {
     const id = current.req.RequestToCompany;
     if (!current.company) current.company = await getOne('Company', id, 'DisplayLabel,Code,TimeZone,RoutingRegion_c,Headquarters.DisplayLabel,CompanyType');
-    const co = current.company;
+    if (!current.team) current.team = await supportTeam().catch(() => ({ rows: [] }));
+    const co = current.company, team = current.team;
     return el('div', null,
-      el('div', { class: 'otsmb-card-title' }, co.DisplayLabel || ''),
+      el('div', { class: 'otsmb-card-title' }, el('a', { href: companyUrl(id), title: 'Open the account in OTSM' }, co.DisplayLabel || '')),
       el('table', { class: 'otsmb-card' }, el('tbody', null,
         line('Account #', co.Code),
         line('Region', co.RoutingRegion_c),
         line('Time zone', zone(co.TimeZone)),
         line('Headquarters', rel(co, 'Headquarters', 'DisplayLabel')),
-        line('Type', co.CompanyType))));
+        line('Type', co.CompanyType))),
+      team.rows.length ? el('div', { class: 'otsmb-team' },
+        el('div', { class: 'otsmb-card-sub' }, 'Support team', el('span', { class: 'otsmb-dim' }, ' · ' + team.from)),
+        el('table', { class: 'otsmb-card' }, el('tbody', null, team.rows.map(t => el('tr', null, el('th', null, t.role),
+          el('td', null, t.id ? el('a', { href: personUrl(t.id), title: 'Open in OTSM' }, person(t.name)) : t.name,
+            t.email ? [' · ', el('a', { href: 'mailto:' + t.email }, t.email)] : null, t.phone ? [' · ', tel(t.phone)] : null,
+            t.plans ? el('div', { class: 'otsmb-dim' }, t.plans) : null)))))) : null);
+  }
+
+  // Account managers and the premium support group, from the entitlement fields: the case's entitlement, or when that has
+  // none of them (or the case has no entitlement), the account's in-use entitlements
+  const TEAM = [
+    ['TechnicalAccountManager_c', 'TAM'],
+    ['SupportAccountManager_c', 'SAM'],
+    ['AccountablePremiumManager_c', 'Premium manager'],
+    ['EnterpriseSupportManager_c', 'Enterprise support mgr'],
+  ];
+  async function supportTeam() {
+    const r = current.req;
+    const layout = ['Id', 'DisplayLabel', 'PhaseId', 'AssignmentGroup_c.Name'].concat(...TEAM.map(([f]) => [f, f + '.Name', f + '.Email', f + '.OfficePhoneNumber', f + '.MobilePhoneNumber'])).join(',');
+    const collect = (ents) => {
+      const rows = [], seen = new Map();
+      for (const x of ents) {
+        for (const [f, role] of TEAM) {
+          if (!x[f]) continue;
+          const key = role + x[f];
+          if (seen.has(key)) { const t = seen.get(key); if (!t.planSet.has(x.DisplayLabel)) { t.planSet.add(x.DisplayLabel); } continue; }
+          const t = { role, id: x[f], name: rel(x, f, 'Name'), email: rel(x, f, 'Email'), phone: rel(x, f, 'OfficePhoneNumber') || rel(x, f, 'MobilePhoneNumber'), planSet: new Set([x.DisplayLabel]) };
+          seen.set(key, t); rows.push(t);
+        }
+        const g = rel(x, 'AssignmentGroup_c', 'Name');
+        if (g && !seen.has('group' + g)) { const t = { role: 'Support group', name: g, planSet: new Set([x.DisplayLabel]) }; seen.set('group' + g, t); rows.push(t); }
+      }
+      return rows;
+    };
+    if (r.Entitlement) {
+      const rows = collect([await getOne('Entitlement', r.Entitlement, layout)]);
+      if (rows.length) return { rows, from: "this case's entitlement" };
+    }
+    const { rows: ents } = await getList('Entitlement', `OwnerCompany = ${r.RequestToCompany} and PhaseId = 'Inuse'`, layout);
+    const rows = collect(ents);
+    rows.forEach(t => { t.plans = [...t.planSet].join(', '); });   // the account can have several plans: say which each person is on
+    return { rows, from: "the account's in-use entitlements" };
   }
 
   // The contact's other cases, or the whole account's
@@ -270,24 +317,37 @@
     const r = current.req;
     const wrap = el('div');
     const show = async scope => {
-      const filter = scope === 'account' ? `RequestToCompany = ${r.RequestToCompany}` : `RequestedForPerson = ${r.RequestedForPerson}`;
       wrap.replaceChildren(el('div', { class: 'otsmb-dim' }, 'Loading…'));
-      const { rows, total } = await getList('Request', filter,
-        'Id,DisplayLabel,Status,Priority,OwnedByPerson.Name,RequestedForPerson.Name,EmsCreationTime', 'EmsCreationTime desc');
+      const layout = 'Id,DisplayLabel,Status,Priority,OwnedByPerson.Name,RequestedForPerson,RequestedForPerson.Name,RequestToCompany,RequestToCompany.DisplayLabel,EmsCreationTime';
+      let rows, total, following = 0;
+      if (scope === 'account') ({ rows, total } = await getList('Request', `RequestToCompany = ${r.RequestToCompany}`, layout, 'EmsCreationTime desc'));
+      else {
+        // The contact's own cases plus the ones they follow (other people's cases, often another account's): their portal lists both
+        const [own, fol] = await Promise.all([
+          getList('Request', `RequestedForPerson = ${r.RequestedForPerson}`, layout, 'EmsCreationTime desc'),
+          getList('Request', `FollowedByUsers[Id = ${r.RequestedForPerson}]`, layout, 'EmsCreationTime desc').catch(() => ({ rows: [], total: 0 })),
+        ]);
+        const extra = fol.rows.filter(x => x.RequestedForPerson !== r.RequestedForPerson);
+        extra.forEach(x => { x._following = true; });
+        following = extra.length;
+        rows = own.rows.concat(extra).sort((a, b) => (+b.EmsCreationTime || 0) - (+a.EmsCreationTime || 0));
+        total = own.total + following;
+      }
       const tabs = el('div', { class: 'otsmb-tabs' },
         ['contact', 'account'].map(s => el('button', { type: 'button', class: s === scope ? 'otsmb-on' : '', onclick: () => show(s).catch(err => wrap.replaceChildren(el('div', { class: 'otsmb-err' }, err.message))) },
           s === 'contact' ? `Contact: ${cut(person(rel(r, 'RequestedForPerson', 'Name')) || '(unknown)', 30)}` : `Account: ${cut(rel(r, 'RequestToCompany', 'DisplayLabel') || '(unknown)', 30)}`)));
       const head = ['Case', 'Title', 'Status', 'Owner'].concat(scope === 'account' ? ['Contact'] : [], ['Created']);
       const body = rows.map(x => el('tr', { class: (x.Id === r.Id ? 'otsmb-current ' : '') + (CLOSED.includes(x.Status) ? 'otsmb-closed' : '') },
         el('td', null, el('a', { href: recordUrl('Request', x.Id) }, x.Id)),
-        el('td', { class: 'otsmb-wrap' }, x.DisplayLabel || ''),
+        el('td', { class: 'otsmb-wrap' }, x.DisplayLabel || '', x._following ? el('div', { class: 'otsmb-dim' }, el('span', { class: 'otsmb-pill otsmb-follow' }, 'Following'),
+          ' ' + person(rel(x, 'RequestedForPerson', 'Name')) + (x.RequestToCompany !== r.RequestToCompany ? ' · ' + rel(x, 'RequestToCompany', 'DisplayLabel') : '')) : null),
         el('td', null, STATUS[x.Status] || x.Status || ''),
         el('td', null, person(rel(x, 'OwnedByPerson', 'Name'))),
         scope === 'account' ? el('td', null, person(rel(x, 'RequestedForPerson', 'Name'))) : null,
         el('td', null, x.EmsCreationTime ? new Date(+x.EmsCreationTime).toLocaleDateString('en-US') : '')));
       const open = rows.filter(x => !CLOSED.includes(x.Status)).length;
       wrap.replaceChildren(tabs,
-        el('div', { class: 'otsmb-card-title' }, `${total} case${total === 1 ? '' : 's'}`, el('span', { class: 'otsmb-dim' }, ` · ${open} open` + (total > rows.length ? ` · newest ${rows.length} shown` : ''))),
+        el('div', { class: 'otsmb-card-title' }, `${total} case${total === 1 ? '' : 's'}`, el('span', { class: 'otsmb-dim' }, (following ? ` · ${following} following` : '') + ` · ${open} open` + (total > rows.length ? ` · newest ${rows.length} shown` : ''))),
         el('div', { class: 'otsmb-scroll' }, table(head, body)));
       if (floating) { const f = floating.box; f.style.left = Math.max(8, Math.min(parseFloat(f.style.left), window.innerWidth - f.offsetWidth - 8)) + 'px'; }
     };
