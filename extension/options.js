@@ -32,7 +32,7 @@
     account: ['Account', null],
     product: ['Product', 'ArcSight Enterprise Security Manager (ESM)'],
     entitlement: ['Entitlement', el('a', { class: 'otsmb-link', href: '#' }, 'Standard Support')],
-    devid: ['Product Dev ID', el('a', { class: 'otsmb-link', href: '#' }, 'OCTIM56A621098')],
+    devid: ['Product Dev ID', el('a', { class: 'otsmb-link', href: '#' }, 'OCTIM56A621097')],
     created: ['Created', '10/27/26, 3:58 AM'],
     updated: ['Updated', '10/28/26, 10:40 AM'],
   };
