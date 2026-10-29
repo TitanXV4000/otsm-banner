@@ -81,3 +81,13 @@ html.otsmb-on .pl-entity-page-minimized-header { top: calc(56px + var(--otsmb-h)
 .otsmb-tabs { display: flex; gap: 4px; margin-bottom: 8px; }
 .otsmb-tabs button { border: 1px solid #c4cad1; background: #fff; border-radius: 4px; padding: 2px 10px; cursor: pointer; font: inherit; }
 .otsmb-tabs button.otsmb-on { background: #0b5cad; border-color: #0b5cad; color: #fff; }
+
+/* Status change from SMAX's case lists */
+.otsmb-status-cell { cursor: pointer; text-decoration: underline dotted #8a929b; text-underline-offset: 3px; }
+.otsmb-status-cell:hover { color: #0b5cad; }
+.otsmb-status-saved { font-weight: 600; color: #1b7f3b; }
+.otsmb-statusmenu { display: flex; flex-direction: column; gap: 2px; min-width: 190px; }
+.otsmb-statusopt { text-align: left; border: 0; background: none; padding: 5px 8px; border-radius: 4px; font: inherit; cursor: pointer; color: #1d2733; }
+.otsmb-statusopt:hover:not(:disabled) { background: #e8f0fb; }
+.otsmb-statusopt.otsmb-on { font-weight: 700; cursor: default; color: #0b4a8a; }
+.otsmb-statusopt.otsmb-on::after { content: '  (current)'; font-weight: 400; color: #6b7480; }

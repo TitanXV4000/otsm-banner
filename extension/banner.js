@@ -455,6 +455,74 @@
     if (!current || current.id !== id) load(id);
     else if (!bar || !document.body.contains(bar)) render();   // the page replaced <body> contents
   }
+  // ---------- change a case's status from SMAX's case lists (setting, off by default) ----------
+  // SMAX's lists are SlickGrids: header cells have ids ending in the field name (…Status), body cells are .slick-cell l<i>
+  // (i = column index) and rows carry item-id-<case id>. The save is the request SMAX's own Save sends: ems/bulk UPDATE
+  // with the case's LastUpdateTime (OTSM refuses it if the case changed since) and the X-XSRF-TOKEN header.
+  const EDIT_STATUSES = ['RequestStatusReady', 'RequestStatusInProgress', 'RequestStatusPending', 'RequestStatusNeedsAttention_c',
+    'RequestStatusPendingInternal_c', 'RequestStatusSuspended'];   // not Resolved or Closed: those need a solution and completion code
+
+  function statusCell(target) {
+    const cell = target && target.closest && target.closest('.slick-cell');
+    const row = cell && cell.closest('.slick-row');
+    const id = row && (row.className.match(/\bitem-id-(\d+)/) || [])[1];
+    if (!id || !row.querySelector('a[href*="/saw/Request/"]')) return null;
+    const idx = (cell.className.match(/\bl(\d+)\b/) || [])[1];
+    let grid = row;
+    while (grid && !grid.querySelector('.slick-header-columns')) grid = grid.parentElement;
+    const head = grid && grid.querySelectorAll('.slick-header-columns .slick-header-column')[idx];
+    return head && /\dStatus$/.test(head.id) ? { cell, id, grid } : null;
+  }
+
+  async function saveStatus(id, status) {
+    const cur = await getOne('Request', id, 'Id,Status,LastUpdateTime');
+    if (cur.Status === status) return;
+    const xsrf = decodeURIComponent((document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/) || [])[1] || '');
+    const res = await fetch(`/rest/${tenant()}/ems/bulk`, { method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-XSRF-TOKEN': xsrf },
+      body: JSON.stringify({ entities: [{ entity_type: 'Request', properties: { Id: id, LastUpdateTime: cur.LastUpdateTime, Status: status } }], operation: 'UPDATE' }) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const r = ((await res.json()).entity_result_list || [])[0];
+    if (!r || r.completion_status !== 'OK') throw new Error((r && r.errorDetails && r.errorDetails.message) || "OTSM didn't save the change");
+  }
+
+  function statusMenu(info) {
+    const shown = info.cell.textContent.trim();
+    const box = el('div', { class: 'otsmb-statusmenu' });
+    const pick = async status => {
+      box.replaceChildren(el('div', { class: 'otsmb-dim' }, 'Saving…'));
+      try {
+        await saveStatus(info.id, status);
+        closeFloating();
+        info.cell.textContent = STATUS[status];
+        info.cell.classList.add('otsmb-status-saved');
+        // SMAX's list Refresh, so the row (and any sorting or filtering on status) is up to date
+        let g = info.grid, btn = null;
+        while (g && !(btn = [...g.querySelectorAll('button.grid-refresh-btn')].find(b => b.offsetParent))) g = g.parentElement;
+        if (btn) setTimeout(() => btn.click(), 600);
+      } catch (err) {
+        box.replaceChildren(el('div', { class: 'otsmb-err' }, `Not changed: ${err.message}`));
+      }
+    };
+    box.append(el('div', { class: 'otsmb-card-title' }, `Case ${info.id}`),
+      ...EDIT_STATUSES.map(st => el('button', { type: 'button', class: 'otsmb-statusopt' + (STATUS[st] === shown ? ' otsmb-on' : ''),
+        disabled: STATUS[st] === shown, onclick: () => pick(st) }, STATUS[st])));
+    return box;
+  }
+
+  document.addEventListener('click', e => {
+    if (!settings.statusEdit) return;
+    const info = statusCell(e.target);
+    if (!info) return;
+    e.preventDefault(); e.stopPropagation();
+    toggleFloating(info.cell, () => statusMenu(info), true, true);
+  }, true);
+  document.addEventListener('mouseover', e => {
+    if (!settings.statusEdit || !e.target.closest || !e.target.closest('.slick-cell')) return;
+    const info = statusCell(e.target);
+    if (info) { info.cell.classList.add('otsmb-status-cell'); info.cell.title = 'Click to change the status'; }
+  });
+
   // SMAX's Refresh button on the case reloads the case without reloading the page; reload the banner with it.
   // (List pages have their own Refresh buttons, but there's no case open there.)
   document.addEventListener('click', e => {

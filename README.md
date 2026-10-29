@@ -25,6 +25,10 @@ with a small label over each value.
   Windows has for FTP links; Windows 11 doesn't offer FileZilla there).
   The copy icon next to it copies the `ftp://user:password@host/` URL for FileZilla or any other FTP program. The link carries
   `skip-domain-check`, so SMAX's "External link navigation" warning doesn't appear; Chrome still asks before opening an app.
+- **Status in case lists** (setting, off by default): click the Status of a case in SMAX's own lists (My Cases and the
+  others) to pick Ready, In Progress, Pending End User, Needs Attention, Pending Internal or Suspended; it saves at once
+  (the same `ems/bulk` UPDATE SMAX's Save sends, with the case's LastUpdateTime, so a case changed since is refused with
+  OTSM's message) and refreshes the list. Not Resolved or Closed, which need a solution and completion code.
 - A ⚙ (settings) button. The banner reloads with SMAX's own Refresh button on the case, and when you come back to the tab after a minute or more.
 
 ## Settings
@@ -38,6 +42,7 @@ open banners redraw straight away.
 - Names: First Last (default) or Last, First (as OTSM stores them).
 - FTS button: host account (default), customer account, or both (small Host and Cust buttons under an FTS label).
 - FTS opens in: WinSCP (default) or the default FTP app (`ftp://` link).
+- Status in case lists: off (default) or on.
 
 All data comes from the SMAX EMS REST API (`/rest/<tenant>/ems/...`) with your own browser login, so it only shows what
 your OTSM account can see. Nothing is stored or sent anywhere else. API notes: `qmon/notes/otsm-api.md`
@@ -65,7 +70,8 @@ To update, replace the folder with the new one and click the reload arrow on the
 `test/options-test.js` opens the Options page from the folder (no extension APIs, so defaults and no saving) and tries
 the tick boxes, arrows, drag and colours. `test/shot.js` takes `SETTINGS='<json>'` to try settings on a real case, and
 `WIDTH` for the window width. `test/shot.js` logs in to OTSM with the qmon service account (headless Chrome in the smexporter image), opens a case,
-injects the banner and takes screenshots of each popup. `test/layout.js` lists SMAX's fixed elements. Both need the qmon
+injects the banner and takes screenshots of each popup. `test/layout.js` lists SMAX's fixed elements. `test/status-edit.js` tests the status change: it re-points one list row at
+test case 11068961 (Trevor's; the only case it may change), picks Pending Internal, then sets it back to Closed. Both need the qmon
 repo's `test/api-poc/common.js`. The screenshots hold real case data, so they go to the gitignored `qmon/data/`:
 
     cd /root/source/qmon && docker run --rm -e CASE=<case> --env-file data/smexporter.env \
