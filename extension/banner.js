@@ -150,13 +150,14 @@
     return n;
   }
 
-  // FTS host account in WinSCP (winscp-ftp:// opens WinSCP rather than another FTP handler)
+  // FTS host account in WinSCP (winscp-ftp:// opens WinSCP rather than another FTP handler). skip-domain-check: SMAX's
+  // "External link navigation" warning (platform.js, click handler on body) skips links with that attribute.
   function ftsLink(r) {
     if (!r.FTSHostAccount_c || !r.FTSHostPassword_c) return el('span', { class: 'otsmb-dim', title: 'This case has no FTS account' }, 'No FTS');
     let host = FTS_HOST;
     try { if (r.FTSLogin_c) host = new URL(r.FTSLogin_c).host; } catch (e) { /* keep the default */ }
     const url = `winscp-ftp://${encodeURIComponent(r.FTSHostAccount_c)}:${encodeURIComponent(r.FTSHostPassword_c)}@${host}/`;
-    return el('a', { class: 'otsmb-btn', href: url, title: `Open ${host} in WinSCP as ${r.FTSHostAccount_c}` }, 'FTS');
+    return el('a', { class: 'otsmb-btn', href: url, 'skip-domain-check': '', title: `Open ${host} in WinSCP as ${r.FTSHostAccount_c}` }, 'FTS');
   }
 
   function copy(node, text) {
