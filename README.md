@@ -91,5 +91,6 @@ The same code runs in Firefox (128 or later). `site/build.sh` also makes `dist/o
 the extension with Firefox's manifest from `site/firefox-manifest.py` (background script instead of the service worker,
 add-on ID `otsm-banner@trevman.com`, host access to the OTSM site granted at install, no data collection). Firefox only
 keeps unsigned add-ons until it restarts, so that zip is signed by Mozilla as an unlisted (private) add-on, giving an
-`.xpi` that installs permanently. In Firefox the content script's requests go through `content.fetch`, so OTSM sees
+`.xpi` that installs permanently: `site/sign-firefox.sh` (keys in qmon/data/amo.env; each version can be signed only
+once, so signed .xpi files are kept in the gitignored `signed/`). `site/deploy.sh` signs and uploads it with the page. In Firefox the content script's requests go through `content.fetch`, so OTSM sees
 them as the page's own (cookies and the XSRF check as in Chrome).
