@@ -43,6 +43,8 @@ open banners redraw straight away.
 - FTS button: host account (default), customer account, or both (small Host and Cust buttons under an FTS label).
 - FTS opens in: WinSCP (default) or the default FTP app (`ftp://` link).
 - Status in case lists: on (default) or off.
+- Case preview: collapsed each time a case list opens, or as OTSM shows it (default). It presses the preview pane's own
+  Collapse button (`.grid-preview-wrapper.expended [data-aid="sidebar-btn-collapse"]`) once per visit to a list.
 
 All data comes from the SMAX EMS REST API (`/rest/<tenant>/ems/...`) with your own browser login, so it only shows what
 your OTSM account can see. Nothing is stored or sent anywhere else. API notes: `qmon/notes/otsm-api.md`

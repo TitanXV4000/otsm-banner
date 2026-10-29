@@ -490,8 +490,22 @@
     render();
   }
 
+  // ---------- case lists: start with OTSM's case preview pane collapsed (setting) ----------
+  // Each time a list is opened, press the preview's own Collapse button once; if the user opens it again, leave it.
+  let listKey = null, collapsePending = false;
+  function collapsePreview() {
+    if (!settings.collapsePreview || caseIdFromUrl()) { listKey = null; return; }
+    const key = location.pathname + location.search;
+    if (key !== listKey) { listKey = key; collapsePending = true; }
+    if (!collapsePending) return;
+    const pane = document.querySelector('.grid-preview-wrapper.expended');   // sic: OTSM's class name
+    const btn = pane && pane.querySelector('[data-aid="sidebar-btn-collapse"]');
+    if (btn && btn.offsetParent) { btn.click(); collapsePending = false; }
+  }
+
   function check() {
     const id = caseIdFromUrl();
+    collapsePreview();
     if (!id) { if (current) { current = null; token++; showBar(false); } return; }
     if (!current || current.id !== id) load(id);
     else if (!bar || !document.body.contains(bar)) render();   // the page replaced <body> contents
