@@ -4,7 +4,7 @@ const { puppeteer, BASE, TENANT, log, login, sleep } = require('/poc/common.js')
 (async () => {
   const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'] });
   const page = await browser.newPage();
-  await page.setViewport({ width: 1600, height: 900 });
+  await page.setViewport({ width: +(process.env.WIDTH || 1600), height: 900 });
   page.on('console', m => { if (/otsmb|error/i.test(m.text())) log('console: ' + m.text()); });
   page.on('pageerror', e => log('pageerror: ' + e.message));
   try {
