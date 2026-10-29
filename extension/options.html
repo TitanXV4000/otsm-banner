@@ -6,14 +6,19 @@
 <link rel="stylesheet" href="banner.css">
 <style>
   body { margin: 0; background: #f4f6f8; color: #1d2733; font: 14px/1.45 "Segoe UI", Roboto, Arial, sans-serif; }
-  main { max-width: 1200px; margin: 0 auto; padding: 20px 16px 40px; }
+  main { max-width: 1200px; margin: 0 auto; padding: 0 16px 40px; }
+  main:first-of-type { padding: 20px 16px 0; }
   h1 { font-size: 20px; margin: 4px 0 2px; }
   .sub { color: #5a6470; margin: 0 0 18px; }
   section { background: #fff; border: 1px solid #d9dee3; border-radius: 8px; padding: 14px 16px; margin: 0 0 14px; }
   h2 { font-size: 15px; margin: 0 0 10px; }
   .hint { color: #6b7480; font-size: 12.5px; }
   /* Preview: the real banner styles, but in the page instead of fixed at the top */
-  #otsmb.otsmb-preview { position: static; height: 46px; border-radius: 6px; margin-top: 4px; overflow-x: auto; }
+  /* The preview uses the page's full width (the banner spans the whole window on OTSM); if it's still too wide,
+     it scrolls, with the scrollbar below the banner rather than over it */
+  section.preview { margin: 0 16px 14px; }
+  .preview-scroll { overflow-x: auto; padding-bottom: 6px; margin-top: 4px; }
+  #otsmb.otsmb-preview { position: static; height: 46px; border-radius: 6px; min-width: max-content; }
   /* Fields list */
   ul.fields { list-style: none; margin: 0; padding: 0; max-width: 520px; }
   ul.fields li { display: flex; align-items: center; gap: 10px; padding: 5px 8px; border: 1px solid #e3e7eb; border-radius: 6px; margin-bottom: 4px; background: #fff; cursor: grab; }
@@ -42,12 +47,12 @@
 <main>
   <h1>OTSM case banner settings</h1>
   <p class="sub">Changes save as you make them and show on open OTSM cases straight away.</p>
-
-  <section>
-    <h2>Preview</h2>
-    <div id="otsmb" class="otsmb-preview"></div>
-  </section>
-
+</main>
+<section class="preview">
+  <h2>Preview</h2>
+  <div class="preview-scroll"><div id="otsmb" class="otsmb-preview"></div></div>
+</section>
+<main>
   <section>
     <h2>Fields</h2>
     <p class="hint">Tick the fields to show. Drag them, or use the arrows, to change the order (top = left).</p>
