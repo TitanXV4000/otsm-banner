@@ -4,7 +4,7 @@ A Chrome/Edge extension that adds a one-line banner, in OTSM's header navy, to t
 (`https://us42-smax.saas.microfocus.com/saw/Request/<id>/...`). The layout follows the old Salesforce case header,
 with a small label over each value:
 
-- **Case** (click to copy), **Title** (first 60 characters; hover for all of it), **Status** and **Priority** badges, **Owner**,
+- **Case** (click to copy), **Title** (first 60 characters; hover for all of it), **Priority** and **Status** badges, **Owner**,
   **Customer**, **Account**, **Created**, **Updated**.
 - **Customer** and **Account** names: hover for a contact card (email, phones, time zone with the local time there, location;
   account number, region, headquarters). Click to keep it open.

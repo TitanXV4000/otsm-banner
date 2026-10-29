@@ -118,8 +118,8 @@
     b.append(
       col('Case', null, el('span', { class: 'otsmb-id', title: 'Click to copy the case number', onclick: e => copy(e.currentTarget, r.Id) }, r.Id)),
       col('Title', 'otsmb-grow', el('span', { class: 'otsmb-title', title }, cut(title, TITLE_MAX))),
-      col('Status', null, status ? el('span', { class: 'otsmb-pill otsmb-st-' + (r.Status || '').replace(/[^A-Za-z]/g, '') }, status) : ''),
       col('Priority', null, prio ? el('span', { class: 'otsmb-pill otsmb-pr-' + prio.toLowerCase() }, prio) : ''),
+      col('Status', null, status ? el('span', { class: 'otsmb-pill otsmb-st-' + (r.Status || '').replace(/[^A-Za-z]/g, '') }, status) : ''),
       col('Owner', null, rel(r, 'OwnedByPerson', 'Name') || '(none)'),
       col('Customer', null,
         r.RequestedForPerson ? hoverName(custName || '(unknown)', custName, personCard) : '(none)',
