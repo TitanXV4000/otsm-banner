@@ -57,7 +57,8 @@
   <ul>
     <li><b>Case</b> number (click to copy), <b>Title</b> (shortened; hover for all of it), <b>Priority</b> and <b>Status</b> badges, <b>Owner</b>, <b>Contact</b>, <b>Account</b>, <b>Created</b> and <b>Updated</b>.</li>
     <li><b>Product Dev ID</b> when the case has one, linked to its Quixy page. <b>Product</b> and <b>Entitlement</b> can be turned on in the settings.</li>
-    <li><b>FTS</b> opens the case's FTS account in WinSCP, logged in with the case's credentials.</li>
+    <li><b>FTS</b> opens the case's FTS account in WinSCP (or your default FTP app), logged in with the case's credentials.
+      The copy icon next to it copies the FTP address with the login, to paste into FileZilla or any other FTP program.</li>
     <li>Contact and account cards with phone numbers, the account's support team and special handling notes.</li>
     <li>It stays on screen as you scroll, and reloads when you press OTSM's Refresh button on the case.</li>
   </ul>
@@ -85,7 +86,7 @@
   <h3>Settings</h3>
   <p>Click ⚙ on the banner (or right-click the extension's icon and choose Options) to pick which fields show and in what order,
     the colours, the title length, how names are shown (First Last or Last, First), whether phone numbers open your phone app or Jabber,
-    and which FTS account the button uses.
+    which FTS account the button uses, and whether it opens WinSCP or your default FTP app.
     Changes show on open cases straight away.</p>
   <figure><a href="img/settings.png"><img src="img/settings.png" alt="The settings page: a live preview, the list of fields with tick boxes and arrows, colour choices and other options"></a></figure>
 
@@ -106,9 +107,12 @@
     <li>On the extensions page, click the reload arrow on the OTSM case banner card, then refresh your OTSM tabs.</li>
   </ol>
 
-  <h3>FTS in WinSCP</h3>
+  <h3>FTS</h3>
   <p>The FTS button needs <a href="https://winscp.net/">WinSCP</a> installed. The first time, the browser asks whether to open WinSCP;
     tick <b>Always allow</b> so it doesn't ask again.</p>
+  <p>To use another FTP program, set <b>FTS opens in</b> to <b>Default FTP app</b>: the button then opens whatever Windows has set
+    for FTP links. Or click the copy icon next to FTS and paste the address into your FTP program (in FileZilla, into the
+    Quickconnect <b>Host</b> box).</p>
 
   <h2>Privacy</h2>
   <p>The extension only runs on OTSM case pages. It reads the case, contact, account, entitlement and special handling note details from OTSM with your own login,
