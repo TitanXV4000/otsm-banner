@@ -95,6 +95,7 @@
   // OTSM stores people as "Last, First"; the Names setting can turn that round
   const person = n => { const m = settings.names === 'first' && /^([^,]+),\s*(.+)$/.exec(n || ''); return m ? `${m[2]} ${m[1]}` : (n || ''); };
   const cut = (text, max) => max && text.length > max ? text.slice(0, max - 1).trimEnd() + '…' : text;
+  const cutSpan = (text, max) => el('span', { title: text.length > max ? text : null }, cut(text, max));   // shortened, full text on hover
   const shortDate = ms => ms ? new Date(+ms).toLocaleString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit', hour: 'numeric', minute: '2-digit' }) : '';
 
   // One column of the banner: a small label over its value (the Salesforce case header layout)
@@ -317,8 +318,8 @@
       return el('tr', { class: (x.Id === r.Entitlement ? 'otsmb-current ' : '') + (inUse(x) ? '' : 'otsmb-closed') },
         mine ? el('td', { class: 'otsmb-center', title: entitled.has(x.Id) ? `${contact} is an entitled user` : '' }, entitled.has(x.Id) ? '✓' : '') : null,
         el('td', null, el('a', { href: recordUrl('Entitlement', x.Id) }, x.Id)),
-        el('td', null, product(x) || '(no product)', other ? el('div', { class: 'otsmb-dim' }, 'Owned by ' + rel(x, 'OwnerCompany', 'DisplayLabel')) : null),
-        el('td', null, x.DisplayLabel || ''),
+        el('td', null, cutSpan(product(x) || '(no product)', 40), other ? el('div', { class: 'otsmb-dim' }, cutSpan('Owned by ' + rel(x, 'OwnerCompany', 'DisplayLabel'), 40)) : null),
+        el('td', null, cutSpan(x.DisplayLabel || '', 32)),
         el('td', null, rel(x, 'Contract', 'DisplayLabel')),
         el('td', null, dateOnly(x.StartDate_c)),
         el('td', null, dateOnly(x.EndDate_c)),
