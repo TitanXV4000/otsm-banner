@@ -110,5 +110,6 @@
   $('customBg').addEventListener('input', e => { s.customBg = e.target.value; changed(); });
   $('customFg').addEventListener('input', e => { s.customFg = e.target.value; changed(); });
 
+  try { $('version').textContent = 'version ' + chrome.runtime.getManifest().version; } catch (e) { /* opened from the folder, not as the extension */ }
   OTSMB.load().then(loaded => { s = loaded; draw(); });
 })();
