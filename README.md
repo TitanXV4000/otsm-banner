@@ -1,7 +1,9 @@
 # OTSM case banner
 
 A Chrome/Edge extension that adds a one-line banner to the top of every OTSM (SMAX) case page
-(`https://us42-smax.saas.microfocus.com/saw/Request/<id>/...`). The layout follows the old Salesforce case header,
+(`https://us42-smax.saas.microfocus.com/saw/Request/<id>/...`). The content script loads on every page of the site: OTSM moves
+from Reports or contact pages (`/admin/...`) to a case without loading a new page, and a script limited to `/saw/*` was
+never added to such a tab (the banner then only appeared after F5). The layout follows the old Salesforce case header,
 with a small label over each value.
 
 - Fields (choose which and their order in the settings): **Case** (click to copy), **Title** (shortened; hover for all of it),
