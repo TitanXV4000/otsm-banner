@@ -38,7 +38,6 @@ var OTSMB = (() => {
     fts: 'host',               // 'host', 'customer' or 'both'
     ftsApp: 'winscp',          // the FTS button opens 'winscp' (winscp-ftp://) or 'ftp' (ftp://, the default FTP app)
     names: 'first',            // people's names as 'first' (First Last) or 'last' (Last, First, as OTSM stores them)
-    phone: 'tel',              // phone numbers open 'tel' (the default phone app) or 'jabber' (Cisco Jabber, ciscotel:)
   };
 
   // Saved settings over the defaults. Fields: saved order first, then any field added since (in its default place).

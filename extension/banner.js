@@ -20,6 +20,7 @@
     cases: '<svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M10 4h4a2 2 0 0 1 2 2v1h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3V6a2 2 0 0 1 2-2zm0 3h4V6h-4v1zM5 9v9h14V9H5z"/></svg>',
     ents: '<svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5l8-3zm0 2.1L6 6.4V11c0 3.9 2.5 7.4 6 8.9 3.5-1.5 6-5 6-8.9V6.4l-6-2.3zm-1 10.5l5-5 1.4 1.4-6.4 6.4-3.4-3.4L9 10.6l2 2z"/></svg>',
     gear: '<svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3h-4l-.4 2.7a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1L11 21h4l.4-2.7a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5-2.2-1.8zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>',
+    pencil: '<svg viewBox="0 0 24 24" width="13" height="13"><path fill="currentColor" d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zm17.7-10.2a1 1 0 0 0 0-1.42l-2.33-2.33a1 1 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>',
     copy: '<svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg>',
     refresh: '<svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M17.6 6.4A8 8 0 1 0 20 12h-2a6 6 0 1 1-1.8-4.2L13 11h7V4l-2.4 2.4z"/></svg>',
   };
@@ -245,9 +246,15 @@
   function line(label, ...value) {
     return value.some(v => v) ? el('tr', null, el('th', null, label), el('td', null, ...value)) : null;
   }
-  // Phone numbers open the default phone app (tel:) or Jabber (ciscotel:); skip-domain-check stops SMAX's external link warning
-  const tel = n => n ? el('a', { href: (settings.phone === 'jabber' ? 'ciscotel:' : 'tel:') + String(n).replace(/[^0-9+]/g, ''), 'skip-domain-check': '',
-    title: settings.phone === 'jabber' ? 'Call with Jabber' : 'Call' }, n) : null;
+  // Phone numbers call with Jabber (ciscotel:); ✎ opens the number in Jabber's call window to edit before dialing
+  // (clicktocallwithedit://). skip-domain-check stops SMAX's external link warning.
+  const tel = n => {
+    if (!n) return null;
+    const digits = String(n).replace(/[^0-9+]/g, '');
+    return el('span', { class: 'otsmb-tel' },
+      el('a', { href: 'ciscotel:' + digits, 'skip-domain-check': '', title: 'Call with Jabber' }, n),
+      el('a', { class: 'otsmb-teledit', href: 'clicktocallwithedit://' + digits, 'skip-domain-check': '', title: 'Edit the number in Jabber before calling', 'aria-label': `Edit ${n} in Jabber before calling`, html: ICON.pencil }));
+  };
   const zone = tz => tz ? [tz, el('span', { class: 'otsmb-dim' }, ` (now ${localTime(tz)})`)] : null;
 
   async function personCard() {

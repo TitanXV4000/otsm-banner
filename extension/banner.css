@@ -64,6 +64,9 @@ html.otsmb-on .pl-entity-page-minimized-header { top: calc(56px + var(--otsmb-h)
 .otsmb-card-title { font-weight: 700; font-size: 14px; margin-bottom: 6px; }
 .otsmb-team { margin-top: 8px; padding-top: 8px; border-top: 1px solid #e6e9ec; }
 .otsmb-card-sub { font-weight: 700; margin-bottom: 4px; }
+.otsmb-tel { white-space: nowrap; }
+.otsmb-float a.otsmb-teledit { margin-left: 5px; color: #6b7480; display: inline-flex; vertical-align: -1px; }
+.otsmb-float a.otsmb-teledit:hover { color: #0b5cad; text-decoration: none; }
 .otsmb-note { white-space: pre-line; background: #fff8e1; border-left: 3px solid #e8b400; padding: 4px 8px; margin-top: 4px; max-width: 520px; user-select: text; }
 .otsmb-card th { text-align: left; color: #5a6470; font-weight: 600; padding: 2px 12px 2px 0; vertical-align: top; white-space: nowrap; }
 .otsmb-card td { padding: 2px 0; user-select: text; }

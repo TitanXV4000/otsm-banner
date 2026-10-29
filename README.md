@@ -12,7 +12,8 @@ with a small label over each value.
   account's page in OTSM. The account card also lists the **Support team** from the entitlement fields (TAM, SAM, Accountable
   Premium Manager, Enterprise Support Manager, assignment group): the case's entitlement, or the account's in-use ones when
   that has none. Then the case's active Special Handling Notes (mostly on the account; often where the SAM and named
-  engineer are written down). Phone numbers open the default phone app or Jabber (setting).
+  engineer are written down). Phone numbers call with Jabber (`ciscotel:`); the pencil next to each opens it in Jabber to edit
+  before calling (`clicktocallwithedit://`).
 - Case icon next to the contact: other cases, on a "Contact: <name>" or "Account: <name>" tab, newest first, with links.
   The current case is highlighted and closed cases are greyed. The contact tab includes cases the contact follows
   (SMAX FollowedByUsers; their portal lists them too), marked Following with that case's contact and account.
@@ -35,7 +36,6 @@ open banners redraw straight away.
 - Contact cards: open on hover (default) or on click only.
 - Other cases popup opens on the Contact (default) or Account tab.
 - Names: First Last (default) or Last, First (as OTSM stores them).
-- Phone numbers open in the default phone app (`tel:`, default) or Cisco Jabber (`ciscotel:`).
 - FTS button: host account (default), customer account, or both (small Host and Cust buttons under an FTS label).
 - FTS opens in: WinSCP (default) or the default FTP app (`ftp://` link).
 

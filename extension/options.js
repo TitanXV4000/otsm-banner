@@ -102,7 +102,6 @@
     radios('cardsOnHover', [[true, 'Open on hover (click keeps it open)'], [false, 'Open on click only']], () => s.cardsOnHover, v => { s.cardsOnHover = v; });
     radios('casesTab', [['contact', 'Contact'], ['account', 'Account']], () => s.casesTab, v => { s.casesTab = v; });
     radios('names', [['first', 'First Last'], ['last', 'Last, First']], () => s.names, v => { s.names = v; });
-    radios('phone', [['tel', 'Default phone app'], ['jabber', 'Cisco Jabber']], () => s.phone, v => { s.phone = v; });
     radios('ftsApp', [['winscp', 'WinSCP'], ['ftp', 'Default FTP app (ftp:// link)']], () => s.ftsApp, v => { s.ftsApp = v; });
     radios('fts', [['host', 'Host account'], ['customer', 'Customer account'], ['both', 'Both (Host and Cust buttons)']], () => s.fts, v => { s.fts = v; });
   }
