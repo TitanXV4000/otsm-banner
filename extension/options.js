@@ -21,22 +21,22 @@
     draw();
   }
 
-  // ---------- preview: the banner with made-up values ----------
+  // ---------- preview: case 11672418 (OpenText's own account), with made-up contact and owner names ----------
   const SAMPLE = {
-    case: ['Case', el('span', { class: 'otsmb-id' }, '11831445')],
+    case: ['Case', el('span', { class: 'otsmb-id' }, '11672418')],
     title: ['Title', null],
     priority: ['Priority', el('span', { class: 'otsmb-pill otsmb-pr-high' }, 'High')],
-    status: ['Status', el('span', { class: 'otsmb-pill otsmb-st-RequestStatusInProgress' }, 'In Progress')],
+    status: ['Status', el('span', { class: 'otsmb-pill otsmb-st-RequestStatusPending' }, 'Pending End User')],
     owner: ['Owner', null],
     contact: ['Contact', null],
     account: ['Account', null],
-    product: ['Product', 'Access Manager (NAM)'],
+    product: ['Product', 'ArcSight Enterprise Security Manager (ESM)'],
     entitlement: ['Entitlement', el('a', { class: 'otsmb-link', href: '#' }, 'Standard Support')],
     devid: ['Product Dev ID', el('a', { class: 'otsmb-link', href: '#' }, 'OCTIM56A621098')],
-    created: ['Created', '10/28/26, 3:20 PM'],
-    updated: ['Updated', '10/28/26, 4:32 PM'],
+    created: ['Created', '10/27/26, 3:58 AM'],
+    updated: ['Updated', '10/28/26, 10:40 AM'],
   };
-  const SAMPLE_TITLE = 'NAM 5.1.2 IDP heap fills over time and needs restart to reset (heap dump analysis)';
+  const SAMPLE_TITLE = '[ESM] ESM tuning and performance as all Connectors Caching with status "Failed Connection Attempts"';
   const icon = () => el('span', { class: 'otsmb-icon' }, '▣');
 
   function preview() {
@@ -45,8 +45,8 @@
     for (const k of ['bg', 'fg', 'label', 'icon', 'line']) b.style.setProperty('--otsmb-' + k, c[k]);
     const value = id => {
       if (id === 'title') { const t = s.titleMax && SAMPLE_TITLE.length > s.titleMax ? SAMPLE_TITLE.slice(0, s.titleMax - 1).trimEnd() + '…' : SAMPLE_TITLE; return el('span', { class: 'otsmb-title' }, t); }
-      if (id === 'contact') return [el('span', { class: 'otsmb-name' }, s.names === 'first' ? 'Oskar Salm' : 'Salm, Oskar'), icon()];
-      if (id === 'owner') return s.names === 'first' ? 'Trevor Sanford' : 'Sanford, Trevor';
+      if (id === 'contact') return [el('span', { class: 'otsmb-name' }, s.names === 'first' ? 'Jordan Ellis' : 'Ellis, Jordan'), icon()];
+      if (id === 'owner') return s.names === 'first' ? 'Casey Morgan' : 'Morgan, Casey';
       if (id === 'account') return [el('span', { class: 'otsmb-name' }, 'OpenText - OpenText'), icon()];
       return SAMPLE[id][1];
     };
