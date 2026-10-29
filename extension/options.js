@@ -38,7 +38,6 @@
   };
   const SAMPLE_TITLE = '[ESM] ESM tuning and performance as all Connectors Caching with status "Failed Connection Attempts"';
   const icon = () => el('span', { class: 'otsmb-icon' }, '▣');
-  const copyIcon = () => el('span', { class: 'otsmb-icon' }, '⧉');
 
   function preview() {
     const b = $('otsmb');
@@ -52,8 +51,8 @@
       return SAMPLE[id][1];
     };
     const fts = s.fts === 'both'
-      ? [el('div', { class: 'otsmb-col' }, el('div', { class: 'otsmb-label' }, 'FTS'), el('div', { class: 'otsmb-value otsmb-fts2' }, ...['Host', 'Cust'].map(t => el('span', { class: 'otsmb-fts' }, el('span', { class: 'otsmb-btn otsmb-btn-sm' }, t), copyIcon()))))]
-      : [el('span', { class: 'otsmb-fts' }, el('span', { class: 'otsmb-btn' }, 'FTS'), copyIcon())];
+      ? [el('div', { class: 'otsmb-col' }, el('div', { class: 'otsmb-label' }, 'FTS'), el('div', { class: 'otsmb-value otsmb-fts2' }, ...['Host', 'Cust'].map(t => el('span', { class: 'otsmb-btn otsmb-btn-sm' }, t))))]
+      : [el('span', { class: 'otsmb-btn' }, 'FTS')];
     b.replaceChildren(...s.fields.filter(f => f.on).map(f => el('div', { class: 'otsmb-col' + (f.id === 'title' ? ' otsmb-grow' : '') },
       el('div', { class: 'otsmb-label' }, SAMPLE[f.id][0]), el('div', { class: 'otsmb-value' }, value(f.id)))),
       el('div', { class: 'otsmb-actions' }, ...fts, el('span', { class: 'otsmb-icon' }, '⚙')));

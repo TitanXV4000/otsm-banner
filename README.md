@@ -23,7 +23,7 @@ with a small label over each value.
   none). Entitlements owned by another company (delegated, or the contact's) are included and say who owns them.
 - **FTS**: opens the case's FTS account in WinSCP (`winscp-ftp://` link) or, by setting, the default FTP app (`ftp://`: whatever
   Windows has for FTP links; Windows 11 doesn't offer FileZilla there).
-  The copy icon next to it copies the `ftp://user:password@host/` URL for FileZilla or any other FTP program. The link carries
+  Right-clicking it copies the `ftp://user:password@host/` URL for FileZilla or any other FTP program. The link carries
   `skip-domain-check`, so SMAX's "External link navigation" warning doesn't appear; Chrome still asks before opening an app.
 - **Status in case lists** (setting, on by default): click the Status of a case in SMAX's own lists (My Cases and the
   others) to pick Ready, In Progress, Pending End User, Needs Attention, Pending Internal or Suspended; it saves at once

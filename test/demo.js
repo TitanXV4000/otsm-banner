@@ -86,6 +86,44 @@ h2 { font-size: 20px; color: #1d2733; margin: 0 0 10px; font-weight: 400; }
 <div class="blk"><div class="bar" style="width:80%"></div><div class="bar" style="width:45%"></div><div class="bar" style="width:66%"></div></div>
 </body></html>`;
 
+// A stand-in for an OTSM case list (made-up cases), built like OTSM's own (SlickGrid classes and ids), so the real
+// banner.js finds the Status column and draws its menu on it
+const LIST_ROWS = [
+  ['11672418', '[ESM] ESM tuning and performance as all Connectors Caching', 'High', 'Ellis, Jordan', 'Pending End User', '10/28/2026 10:40:46 AM', 'Hi Jordan, the connector logs show the cache filling after…'],
+  ['11650211', '[ESM] Correlation rule not triggering after upgrade to 7.8', 'Medium', 'Reyes, Sam', 'In Progress', '10/29/2026 12:28:44 PM', 'Thanks Sam, the rule export helps. I can reproduce it…'],
+  ['11612007', '[ESM] Shared connector appliance drops events during peak load', 'Medium', 'Shah, Parker', 'Pending Internal', '10/27/2026 4:05:12 PM', 'Sent the event counts to the connector team for review…'],
+  ['11598730', '[Logger] Storage group retention question', 'Low', 'Patel, Robin', 'Pending End User', '10/23/2026 2:52:37 PM', 'Hi Robin, retention is set per storage group; see…'],
+];
+const LIST_COLS = [['isSelected', '', 34], ['Id', 'Id', 96], ['DisplayLabel', 'Title', 300], ['Priority', 'Priority', 100], ['RequestedForPerson', 'Requested for', 128],
+  ['Status', 'Status', 150], ['LastUpdateTime', 'Updated On', 180], ['LatestComment_c', 'Latest Comment', 330]];
+const listCell = (row, i) => {
+  const [id, title, pri, who, st, upd, com] = row;
+  return [`<input type="checkbox">`, `<a class="entity-link-id" href="/saw/Request/${id}">${id}</a>`, title,
+    `<span class="pri pri-${pri.toLowerCase()}"></span>${pri}`, `<span class="av"></span>${who}`, st, upd, com][i];
+};
+const LIST = `<!doctype html><html><head><meta charset="utf-8"><style>
+body { margin: 0; padding-top: 56px; background: #fff; font: 14px Arial, sans-serif; color: #333; }
+.navbar-fixed-top { position: fixed; top: 0; left: 0; right: 0; height: 56px; background: #00264b; color: #fff; display: flex; align-items: center; padding: 0 20px; font-size: 17px; }
+.tabs { background: #f1f3f5; display: flex; gap: 34px; padding: 0 20px; height: 40px; align-items: center; font-size: 14px; }
+.tabs .on { color: #0b5cad; font-weight: 700; }
+.tools { display: flex; gap: 26px; padding: 14px 20px; font-size: 14px; color: #333; }
+.slickgrid_1 { margin: 0 20px; border-top: 1px solid #e3e7eb; }
+.slick-header-columns, .slick-row { display: flex; }
+.slick-header-column { font-weight: 700; padding: 10px 8px; box-sizing: border-box; }
+.slick-row { border-bottom: 1px solid #e3e7eb; }
+.slick-row.sel { background: #e9ecef; }
+.slick-cell { padding: 10px 8px; box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.slick-cell a { color: #0b5cad; text-decoration: none; }
+.pri { display: inline-block; width: 6px; height: 14px; margin-right: 6px; vertical-align: -2px; border-left: 2px solid #f39c12; border-right: 2px solid #f39c12; }
+.pri-high { border-color: #e67e22; } .pri-low { border-color: #f5c26b; }
+.av { display: inline-block; width: 18px; height: 18px; border-radius: 50%; background: #5a6470; margin-right: 6px; vertical-align: -4px; }
+</style></head><body><div class="navbar-fixed-top">OTSM</div>
+<div class="tabs"><span class="on">MY CASES</span><span>CLOSED</span><span>ALL ACTIVE</span><span>REQUESTED FOR</span></div>
+<div class="tools"><span>New</span><span>Details</span><span>Refresh</span><span>Columns</span><span>More</span></div>
+<div class="slickgrid_1"><div class="slick-header-columns">${LIST_COLS.map(([f, t, w]) => `<div class="slick-header-column" id="slickgrid_1${f}" style="width:${w}px">${t}</div>`).join('')}</div>
+<div class="slick-viewport">${LIST_ROWS.map((r, ri) => `<div class="slick-row item-id-${r[0]}${ri === 0 ? ' sel' : ''}">${LIST_COLS.map(([f, t, w], i) => `<div class="slick-cell l${i} r${i}" style="width:${w}px">${listCell(r, i)}</div>`).join('')}</div>`).join('')}</div></div>
+</body></html>`;
+
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });
   const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--font-render-hinting=none'] });
@@ -124,10 +162,24 @@ h2 { font-size: 20px; color: #1d2733; margin: 0 0 10px; font-weight: 400; }
   await page.keyboard.press('Escape');
   await click('#otsmb button[title="Account\'s entitlements"]'); await sleep(1000); await shotPopup('entitlements');
   await page.keyboard.press('Escape');
+  // a case list with the status menu open (nothing is saved: the menu is only hovered)
+  const list = await browser.newPage();
+  await list.setViewport({ width: 1340, height: 490, deviceScaleFactor: 1 });
+  await list.setRequestInterception(true);
+  list.on('request', r => r.respond({ status: 200, contentType: 'text/html', body: LIST }));
+  await list.goto(`${ORIGIN}/saw/Requests?TENANTID=${T}`);
+  await list.addStyleTag({ path: EXT + '/banner.css' });
+  await list.addScriptTag({ path: EXT + '/settings.js' }); await list.addScriptTag({ path: EXT + '/banner.js' }); await sleep(500);
+  const stCell = await list.$('.slick-row.item-id-11650211 .slick-cell.l5');
+  await stCell.hover(); await sleep(200); await stCell.click(); await sleep(500);
+  const opt = await list.evaluateHandle(() => [...document.querySelectorAll('.otsmb-statusopt')].find(b => b.textContent === 'Pending End User'));
+  await opt.hover(); await sleep(300);
+  await list.screenshot({ path: OUT + '/status-list.png', clip: { x: 0, y: 56, width: 1340, height: 420 } }); console.log('wrote status-list');
+  await list.close();
   // the settings page, with its defaults (it runs from the folder without extension APIs)
-  const opt = await browser.newPage();
-  await opt.setViewport({ width: 1700, height: 900, deviceScaleFactor: 1 });
-  await opt.goto('file://' + EXT + '/options.html'); await sleep(800);
-  await opt.screenshot({ path: OUT + '/settings.png', fullPage: true }); console.log('wrote settings');
+  const optPage = await browser.newPage();
+  await optPage.setViewport({ width: 1700, height: 900, deviceScaleFactor: 1 });
+  await optPage.goto('file://' + EXT + '/options.html'); await sleep(800);
+  await optPage.screenshot({ path: OUT + '/settings.png', fullPage: true }); console.log('wrote settings');
   await browser.close();
 })();

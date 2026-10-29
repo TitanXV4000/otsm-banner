@@ -21,7 +21,6 @@
     ents: '<svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5l8-3zm0 2.1L6 6.4V11c0 3.9 2.5 7.4 6 8.9 3.5-1.5 6-5 6-8.9V6.4l-6-2.3zm-1 10.5l5-5 1.4 1.4-6.4 6.4-3.4-3.4L9 10.6l2 2z"/></svg>',
     gear: '<svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3h-4l-.4 2.7a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1L11 21h4l.4-2.7a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5-2.2-1.8zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>',
     pencil: '<svg viewBox="0 0 24 24" width="13" height="13"><path fill="currentColor" d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zm17.7-10.2a1 1 0 0 0 0-1.42l-2.33-2.33a1 1 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>',
-    copy: '<svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg>',
     refresh: '<svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M17.6 6.4A8 8 0 1 0 20 12h-2a6 6 0 1 1-1.8-4.2L13 11h7V4l-2.4 2.4z"/></svg>',
   };
 
@@ -223,7 +222,7 @@
   // FTS accounts in WinSCP (winscp-ftp:// opens WinSCP rather than another FTP handler). skip-domain-check: SMAX's
   // "External link navigation" warning (platform.js, click handler on body) skips links with that attribute.
   // FTS: the button opens the account in WinSCP or the default FTP app (setting: whatever Windows has for ftp:// links);
-  // the icon next to it copies the ftp://user:pass@host/ URL, which FileZilla's Quickconnect and most FTP programs accept
+  // right-clicking it copies the ftp://user:pass@host/ URL, which FileZilla's Quickconnect and most FTP programs accept
   const FTS_APPS = { winscp: ['winscp-ftp://', 'WinSCP'], ftp: ['ftp://', 'your FTP app'] };
   function ftsLinks(r) {
     let host = FTS_HOST;
@@ -235,12 +234,11 @@
     if (settings.fts !== 'host') accounts.push({ user: r.FTSCustAccount_c, pass: r.FTSCustPassword_c, text: both ? 'Cust' : 'FTS', what: 'customer account' });
     const groups = accounts.filter(a => a.user && a.pass).map(a => {
       const login = `${encodeURIComponent(a.user)}:${encodeURIComponent(a.pass)}@${host}/`;
-      return el('span', { class: 'otsmb-fts' },
-        el('a', { class: 'otsmb-btn' + (both ? ' otsmb-btn-sm' : ''), href: scheme + login, 'skip-domain-check': '',
-          title: `Open ${host} in ${appName} with the FTS ${a.what} ${a.user}` }, a.text),
-        el('button', { class: 'otsmb-icon otsmb-copyurl', type: 'button', title: `Copy the FTS ${a.what} URL (ftp://…)`, html: ICON.copy,
-          onclick: e => { const b = e.currentTarget; navigator.clipboard.writeText('ftp://' + login).then(() => { b.classList.add('otsmb-copied'); b.title = 'Copied';
-            setTimeout(() => { b.classList.remove('otsmb-copied'); b.title = `Copy the FTS ${a.what} URL (ftp://…)`; }, 1200); }); } }));
+      // Right-click copies the URL; the button briefly says Copied
+      return el('a', { class: 'otsmb-btn' + (both ? ' otsmb-btn-sm' : ''), href: scheme + login, 'skip-domain-check': '',
+        title: `Open ${host} in ${appName} with the FTS ${a.what} ${a.user}\nRight-click to copy the FTP URL`,
+        oncontextmenu: e => { e.preventDefault(); const b = e.currentTarget;
+          navigator.clipboard.writeText('ftp://' + login).then(() => { b.textContent = 'Copied'; setTimeout(() => { b.textContent = a.text; }, 1200); }); } }, a.text);
     });
     if (!groups.length) return [el('span', { class: 'otsmb-dim', title: 'This case has no FTS account' }, 'No FTS')];
     if (!both) return groups;

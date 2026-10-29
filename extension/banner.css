@@ -35,9 +35,7 @@ html.otsmb-on .pl-entity-page-minimized-header { top: calc(56px + var(--otsmb-h)
 #otsmb .otsmb-btn { background: #1a73e8; color: #fff; padding: 3px 12px; border-radius: 4px; font-weight: 600; text-decoration: none; }
 #otsmb .otsmb-btn:hover { background: #3b8bf0; }
 #otsmb .otsmb-btn.otsmb-btn-sm { padding: 0 8px; font-size: 12px; line-height: 18px; }
-#otsmb .otsmb-fts2 { display: flex; gap: 8px; }
-#otsmb .otsmb-fts { display: inline-flex; align-items: center; gap: 2px; }
-#otsmb .otsmb-copyurl.otsmb-copied { color: #7ee2a0; opacity: 1; }
+#otsmb .otsmb-fts2 { display: flex; gap: 4px; }
 
 .otsmb-dim { color: #6b7480; }
 .otsmb-err { color: #b3261e; }
