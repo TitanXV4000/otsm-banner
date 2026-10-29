@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OTSM case banner</title>
+<meta name="description" content="A Chrome and Edge extension that puts a one-line case summary at the top of every OTSM (SMAX) case.">
+<style>
+  :root { --navy: #00264b; --ink: #1d2733; --dim: #5a6470; --line: #d9dee3; --link: #0b5cad; --bg: #f4f6f8; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 "Segoe UI", Roboto, Arial, sans-serif; }
+  header { background: var(--navy); color: #fff; padding: 36px 16px 30px; }
+  header .wrap, main { max-width: 1040px; margin: 0 auto; }
+  header h1 { margin: 0 0 6px; font-size: 32px; font-weight: 600; }
+  header p { margin: 0; color: #c9d7e6; font-size: 18px; max-width: 760px; }
+  main { padding: 0 16px 48px; }
+  h2 { font-size: 22px; margin: 40px 0 10px; }
+  h3 { font-size: 17px; margin: 26px 0 6px; }
+  p, li { max-width: 780px; }
+  a { color: var(--link); }
+  code, kbd { font-family: Consolas, "Liberation Mono", monospace; font-size: .9em; background: #e8ecf0; padding: 1px 5px; border-radius: 4px; }
+  figure { margin: 14px 0 6px; }
+  figure img { display: block; max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  figcaption { color: var(--dim); font-size: 14px; margin-top: 6px; }
+  .hero { margin-top: -18px; }
+  .hero img { box-shadow: 0 6px 24px rgba(0, 20, 50, .18); }
+  .download { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 18px 20px; margin: 28px 0 0; }
+  .btn { display: inline-block; background: #1a73e8; color: #fff; text-decoration: none; font-weight: 600; padding: 10px 20px; border-radius: 6px; }
+  .btn:hover { background: #3b8bf0; }
+  .download .meta { color: var(--dim); font-size: 14px; }
+  ol li, ul li { margin: 4px 0; }
+  .note { background: #fff; border-left: 4px solid #1a73e8; padding: 10px 14px; border-radius: 0 6px 6px 0; max-width: 780px; }
+  @media (max-width: 760px) { header h1 { font-size: 26px; } }
+  footer { color: var(--dim); font-size: 14px; border-top: 1px solid var(--line); margin-top: 48px; padding-top: 14px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>OTSM case banner</h1>
+    <p>A Chrome and Edge extension that keeps the important facts about a case in one line at the top of every OTSM case,
+      with the contact's other cases, the account's entitlements and FTS one click away.</p>
+  </div>
+</header>
+<main>
+  <figure class="hero">
+    <img src="img/banner.png" width="1600" height="230" alt="The banner above an OTSM case: case number, title, High priority, Pending End User status, owner, contact, account, Product Dev ID, created and updated dates, and FTS Host and Cust buttons">
+    <figcaption>The banner sits above OTSM's own header. Screenshots on this page use sample data.</figcaption>
+  </figure>
+
+  <div class="download">
+    <a class="btn" href="otsm-banner-@VERSION@.zip" download>Download version @VERSION@</a>
+    <span class="meta">@DATE@ · Chrome or Edge on Windows, Mac or Linux · <a href="https://github.com/TitanXV4000/otsm-banner">Source on GitHub</a></span>
+  </div>
+
+  <h2>What it shows</h2>
+  <ul>
+    <li><b>Case</b> number (click to copy), <b>Title</b> (shortened; hover for all of it), <b>Priority</b> and <b>Status</b> badges, <b>Owner</b>, <b>Contact</b>, <b>Account</b>, <b>Created</b> and <b>Updated</b>.</li>
+    <li><b>Product Dev ID</b> when the case has one, linked to its Quixy page. <b>Product</b> and <b>Entitlement</b> can be turned on in the settings.</li>
+    <li><b>FTS</b> opens the case's FTS account in WinSCP, logged in with the case's credentials.</li>
+    <li>It stays on screen as you scroll, and reloads when you press OTSM's Refresh button on the case.</li>
+  </ul>
+
+  <h3>Contact and account cards</h3>
+    <p>Hover over the contact or account name for their details: email and phone numbers, time zone with the local time there,
+    location, account number and region. Click to keep the card open.</p>
+  <figure><a href="img/contact-card.png"><img src="img/contact-card.png" alt="Contact card with email, office and mobile numbers, time zone and location"></a></figure>
+  <h3>Other cases</h3>
+    <p>The case icon next to the contact lists the contact's other cases, or the whole account's, newest first, with links.
+    This case is highlighted and closed cases are greyed.</p>
+  <figure><a href="img/cases-account.png"><img src="img/cases-account.png" alt="Popup listing the account's cases with case number, title, status, owner, contact and created date"></a></figure>
+
+  <h3>Entitlements</h3>
+  <p>The shield icon next to the account lists its entitlements: product, support plan, contract, dates and state, in-use ones first.
+    A ✓ marks the ones the case's contact is an entitled user on, and the case's own entitlement is highlighted.</p>
+  <figure><a href="img/entitlements.png"><img src="img/entitlements.png" alt="Popup listing entitlements with a contact check mark, entitlement number, product, support plan, contract, start, end and state"></a></figure>
+
+  <h3>Settings</h3>
+  <p>Click ⚙ on the banner (or right-click the extension's icon and choose Options) to pick which fields show and in what order,
+    the colours, the title length, how names are shown (First Last or Last, First) and which FTS account the button uses.
+    Changes show on open cases straight away.</p>
+  <figure><a href="img/settings.png"><img src="img/settings.png" alt="The settings page: a live preview, the list of fields with tick boxes and arrows, colour choices and other options"></a></figure>
+
+  <h2>Install</h2>
+  <p>The extension isn't in the Chrome or Edge store, so you load it from a folder. It takes a minute:</p>
+  <ol>
+    <li>Download the zip above and extract it somewhere you'll keep it, such as <code>Documents\otsm-banner</code>.
+      The browser runs the extension from that folder, so don't delete it.</li>
+    <li>Open <code>chrome://extensions</code> in Chrome, or <code>edge://extensions</code> in Edge.</li>
+    <li>Turn on <b>Developer mode</b> (top right in Chrome, on the left in Edge).</li>
+    <li>Click <b>Load unpacked</b> and pick the <code>otsm-banner</code> folder (the one with <code>manifest.json</code> in it).</li>
+    <li>Open or refresh an OTSM case. The banner appears at the top.</li>
+  </ol>
+
+  <h3>Update to a new version</h3>
+  <ol>
+    <li>Download the new zip and extract it over the old folder, replacing the files.</li>
+    <li>On the extensions page, click the reload arrow on the OTSM case banner card, then refresh your OTSM tabs.</li>
+  </ol>
+
+  <h3>FTS in WinSCP</h3>
+  <p>The FTS button needs <a href="https://winscp.net/">WinSCP</a> installed. The first time, the browser asks whether to open WinSCP;
+    tick <b>Always allow</b> so it doesn't ask again.</p>
+
+  <h2>Privacy</h2>
+  <p>The extension only runs on OTSM case pages. It reads the case, contact, account and entitlement details from OTSM with your own login,
+    the same way the OTSM page does, and doesn't send anything anywhere else. Your settings are kept in your browser profile.</p>
+
+  <footer>Questions, problems or ideas: Trevor Sanford, <a href="mailto:tsanford@opentext.com">tsanford@opentext.com</a>.</footer>
+</main>
+</body>
+</html>

@@ -63,3 +63,8 @@ repo's `test/api-poc/common.js`. The screenshots hold real case data, so they go
       -v $PWD/test/api-poc:/poc:ro -v /root/source/otsm-banner/extension:/ext:ro \
       -v /root/source/otsm-banner/test:/t:ro -v $PWD/data/otsm-banner-shots:/out \
       tsanford/smexporter node /t/shot.js
+
+## Web page
+https://trevman.com/otsm-banner/ (HostMonster; uploaded by hand). Source in `site/`: `test/demo.js` makes the screenshots
+from the real banner code with made-up API answers (no real case data), then `site/build.sh` builds `dist/` (the page with
+the version filled in, the screenshots and `otsm-banner-<version>.zip`) to upload to the site's `otsm-banner` folder.
