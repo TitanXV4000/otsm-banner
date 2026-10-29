@@ -276,6 +276,8 @@
     ]);
     const byId = new Map();
     for (const x of [...own.rows, ...delegated, ...(mine || [])]) if (!byId.has(x.Id)) byId.set(x.Id, x);
+    // The case's own entitlement can belong to another company the account isn't delegated by: add it so it's always listed
+    if (r.Entitlement && !byId.has(r.Entitlement)) { try { byId.set(r.Entitlement, await getOne('Entitlement', r.Entitlement, layout)); } catch (e) { /* not readable */ } }
     const entitled = new Set((mine || []).map(x => x.Id));
     const now = Date.now();
     const inUse = x => x.PhaseId === 'Inuse' && !(x.EndDate_c && +x.EndDate_c < now);
