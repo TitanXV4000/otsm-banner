@@ -103,7 +103,7 @@
     radios('casesTab', [['contact', 'Contact'], ['account', 'Account']], () => s.casesTab, v => { s.casesTab = v; });
     radios('names', [['first', 'First Last'], ['last', 'Last, First']], () => s.names, v => { s.names = v; });
     radios('ftsApp', [['winscp', 'WinSCP'], ['ftp', 'Default FTP app (ftp:// link)']], () => s.ftsApp, v => { s.ftsApp = v; });
-    radios('statusEdit', [[false, 'Off'], [true, 'Click a status to change it (saves straight away)']], () => s.statusEdit, v => { s.statusEdit = v; });
+    radios('statusEdit', [[true, 'On'], [false, 'Off']], () => s.statusEdit, v => { s.statusEdit = v; });
     radios('fts', [['host', 'Host account'], ['customer', 'Customer account'], ['both', 'Both (Host and Cust buttons)']], () => s.fts, v => { s.fts = v; });
   }
 

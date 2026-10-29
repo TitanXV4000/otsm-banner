@@ -118,7 +118,7 @@
       return col('Contact', null, r.RequestedForPerson ? hoverName(n || '(unknown)', n, personCard) : '(none)',
         r.RequestedForPerson && iconButton('cases', "Contact's other cases", casesPopup)); },
     account: r => { const n = rel(r, 'RequestToCompany', 'DisplayLabel');
-      return col('Account', null, r.RequestToCompany ? hoverName(cut(n || '(unknown)', ACCOUNT_MAX), n, companyCard) : '(none)',
+      return col('Account', 'otsmb-col-account', r.RequestToCompany ? hoverName(cut(n || '(unknown)', ACCOUNT_MAX), n, companyCard) : '(none)',
         r.RequestToCompany && iconButton('ents', "Account's entitlements", entitlementsPopup)); },
     product: r => col('Product', null, rel(r, 'ProductModel_c', 'DisplayLabel') || '(none)'),
     entitlement: r => { const e = rel(r, 'Entitlement', 'DisplayLabel');
@@ -150,7 +150,34 @@
     const r = c.req;
     b.append(...settings.fields.filter(f => f.on && FIELD_RENDER[f.id]).map(f => FIELD_RENDER[f.id](r)).filter(Boolean),
       el('div', { class: 'otsmb-actions' }, ...ftsLinks(r), settingsButton()));
+    fit();
   }
+
+  // When the window is too narrow for the banner, the title gives up room first; once it's down to the account name's
+  // width, the two shrink evenly (both end in "…"). Everything else keeps its width.
+  const FIT_MIN = 80;
+  function fit() {
+    if (!bar) return;
+    const t = bar.querySelector('.otsmb-grow'), a = bar.querySelector('.otsmb-col-account');
+    for (const x of [t, a]) if (x) x.style.width = x.style.flex = '';
+    if (!t) return;
+    bar.classList.add('otsmb-measure');   // the title at its natural width
+    let over = bar.scrollWidth - bar.clientWidth;
+    let T = t.offsetWidth, A = a ? a.offsetWidth : 0;
+    bar.classList.remove('otsmb-measure');
+    if (over <= 0) return;
+    if (!a) T -= over;
+    else {
+      const first = Math.min(over, Math.abs(T - A));
+      if (T >= A) T -= first; else A -= first;
+      over -= first;
+      T -= over / 2; A -= over / 2;
+    }
+    t.style.flex = '0 0 auto'; t.style.width = Math.max(FIT_MIN, Math.floor(T)) + 'px';
+    if (a) { a.style.flex = '0 0 auto'; a.style.width = Math.max(FIT_MIN, Math.floor(A)) + 'px'; }
+  }
+  let fitTimer = null;
+  window.addEventListener('resize', () => { clearTimeout(fitTimer); fitTimer = setTimeout(fit, 100); });
 
   // The Options page can only be opened by the extension's service worker
   function settingsButton() {
@@ -455,7 +482,7 @@
     if (!current || current.id !== id) load(id);
     else if (!bar || !document.body.contains(bar)) render();   // the page replaced <body> contents
   }
-  // ---------- change a case's status from SMAX's case lists (setting, off by default) ----------
+  // ---------- change a case's status from SMAX's case lists (setting, on by default) ----------
   // SMAX's lists are SlickGrids: header cells have ids ending in the field name (…Status), body cells are .slick-cell l<i>
   // (i = column index) and rows carry item-id-<case id>. The save is the request SMAX's own Save sends: ems/bulk UPDATE
   // with the case's LastUpdateTime (OTSM refuses it if the case changed since) and the X-XSRF-TOKEN header.
@@ -504,8 +531,7 @@
         box.replaceChildren(el('div', { class: 'otsmb-err' }, `Not changed: ${err.message}`));
       }
     };
-    box.append(el('div', { class: 'otsmb-card-title' }, `Case ${info.id}`),
-      ...EDIT_STATUSES.map(st => el('button', { type: 'button', class: 'otsmb-statusopt' + (STATUS[st] === shown ? ' otsmb-on' : ''),
+    box.append(...EDIT_STATUSES.map(st => el('button', { type: 'button', class: 'otsmb-statusopt' + (STATUS[st] === shown ? ' otsmb-on' : ''),
         disabled: STATUS[st] === shown, onclick: () => pick(st) }, STATUS[st])));
     return box;
   }

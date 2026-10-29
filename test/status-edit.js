@@ -1,4 +1,5 @@
-// Test of "Status in case lists" (README). Needs qmon test/api-poc/common.js; run like shot.js.
+// Test of "Status in case lists" (README). Needs qmon test/api-poc/common.js; run like shot.js. Uses the case list view
+// that is open in OTSM for the login (it must have a Status column; the test doesn't switch views).
 // WRITES to test case 11068961 only: on SMAX's case list, the first row is re-pointed at 11068961 (its item-id class),
 // then its Status cell is clicked and "Pending Internal" picked. Afterwards the case is set back to Closed.
 const { puppeteer, BASE, TENANT, log, login, sleep, get } = require('/poc/common.js');
@@ -9,7 +10,8 @@ const { puppeteer, BASE, TENANT, log, login, sleep, get } = require('/poc/common
   const bulk = []; page.on('request', q => { if (/ems\/bulk/.test(q.url())) bulk.push(q.postData()); });
   try {
     if (!await login(page)) { log('login failed'); return; }
-    await page.goto(`${BASE}/saw/Requests?TENANTID=${TENANT}`, { waitUntil: 'networkidle2', timeout: 120000 }); await sleep(7000);
+    await page.goto(`${BASE}/saw/Requests?TENANTID=${TENANT}`, { waitUntil: 'networkidle2', timeout: 120000 });
+    await page.waitForFunction(() => [...document.querySelectorAll('.slick-header-column')].some(h => /\dStatus$/.test(h.id)) && document.querySelector('.slick-row'), { timeout: 60000 }).catch(async e => { await page.screenshot({ path: '/out/status-edit-nogrid.png' }); throw e; }); await sleep(2000);
     await page.addStyleTag({ path: '/ext/banner.css' });
     await page.evaluate(() => { window.OTSMB_TEST_SETTINGS = { statusEdit: true }; });
     await page.addScriptTag({ path: '/ext/settings.js' }); await page.addScriptTag({ path: '/ext/banner.js' }); await sleep(1500);

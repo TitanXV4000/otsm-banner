@@ -36,7 +36,7 @@ var OTSMB = (() => {
     cardsOnHover: true,        // false: contact cards open only on click
     casesTab: 'contact',       // the cases popup opens on 'contact' or 'account'
     fts: 'host',               // 'host', 'customer' or 'both'
-    statusEdit: false,         // click a status in SMAX's case lists to change it
+    statusEdit: true,          // click a status in SMAX's case lists to change it
     ftsApp: 'winscp',          // the FTS button opens 'winscp' (winscp-ftp://) or 'ftp' (ftp://, the default FTP app)
     names: 'first',            // people's names as 'first' (First Last) or 'last' (Last, First, as OTSM stores them)
   };

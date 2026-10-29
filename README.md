@@ -25,7 +25,7 @@ with a small label over each value.
   Windows has for FTP links; Windows 11 doesn't offer FileZilla there).
   The copy icon next to it copies the `ftp://user:password@host/` URL for FileZilla or any other FTP program. The link carries
   `skip-domain-check`, so SMAX's "External link navigation" warning doesn't appear; Chrome still asks before opening an app.
-- **Status in case lists** (setting, off by default): click the Status of a case in SMAX's own lists (My Cases and the
+- **Status in case lists** (setting, on by default): click the Status of a case in SMAX's own lists (My Cases and the
   others) to pick Ready, In Progress, Pending End User, Needs Attention, Pending Internal or Suspended; it saves at once
   (the same `ems/bulk` UPDATE SMAX's Save sends, with the case's LastUpdateTime, so a case changed since is refused with
   OTSM's message) and refreshes the list. Not Resolved or Closed, which need a solution and completion code.
@@ -42,7 +42,7 @@ open banners redraw straight away.
 - Names: First Last (default) or Last, First (as OTSM stores them).
 - FTS button: host account (default), customer account, or both (small Host and Cust buttons under an FTS label).
 - FTS opens in: WinSCP (default) or the default FTP app (`ftp://` link).
-- Status in case lists: off (default) or on.
+- Status in case lists: on (default) or off.
 
 All data comes from the SMAX EMS REST API (`/rest/<tenant>/ems/...`) with your own browser login, so it only shows what
 your OTSM account can see. Nothing is stored or sent anywhere else. API notes: `qmon/notes/otsm-api.md`
