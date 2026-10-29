@@ -300,7 +300,7 @@
     });
     return el('div', null,
       el('div', { class: 'otsmb-card-title' }, `${rows.length} entitlement${rows.length === 1 ? '' : 's'}`,
-        el('span', { class: 'otsmb-dim' }, (mine ? ` · ✓ = ${contact} is an entitled user (${entitled.size})` : '') + (r.Entitlement ? " · this case's is highlighted" : ''))),
+        el('span', { class: 'otsmb-dim' }, (mine ? ` · ✓ = ${contact} is an entitled user (${entitled.size})` : '') + (r.Entitlement ? " · this case's is highlighted" : ' · this case has no entitlement' + (r.OverrideEntitlement_c ? ' (Override Entitlement is checked)' : '')))),
       rows.length ? el('div', { class: 'otsmb-scroll' }, table((mine ? ['Contact'] : []).concat(['Entitlement', 'Product', 'Support plan', 'Contract', 'Start', 'End', 'State']), body))
         : el('div', { class: 'otsmb-dim' }, 'None found for this account.'));
   }
@@ -308,7 +308,7 @@
   // ---------- loading and page watching ----------
   const CASE_LAYOUT = 'Id,DisplayLabel,Status,Priority,EmsCreationTime,LastUpdateTime,OwnedByPerson.Name,' +
     'RequestedForPerson,RequestedForPerson.Name,RequestToCompany,RequestToCompany.DisplayLabel,Entitlement,' +
-    'FTSHostAccount_c,FTSHostPassword_c,FTSLogin_c';
+    'OverrideEntitlement_c,FTSHostAccount_c,FTSHostPassword_c,FTSLogin_c';
 
   async function load(id, again) {
     const mine = ++token;
