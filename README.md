@@ -65,6 +65,8 @@ repo's `test/api-poc/common.js`. The screenshots hold real case data, so they go
       tsanford/smexporter node /t/shot.js
 
 ## Web page
-https://trevman.com/otsm-banner/ (HostMonster; uploaded by hand). Source in `site/`: `test/demo.js` makes the screenshots
+https://trevman.com/otsm-banner/ (HostMonster). Source in `site/`: `test/demo.js` makes the screenshots
 from the real banner code with made-up API answers (no real case data), then `site/build.sh` builds `dist/` (the page with
-the version filled in, the screenshots and `otsm-banner-<version>.zip`) to upload to the site's `otsm-banner` folder.
+the version filled in, the screenshots and `otsm-banner-<version>.zip`); `site/deploy.sh` builds and uploads it
+(ssh tsanford@trevman.com with phoenix's key, `~/www/trevman/otsm-banner/`) and checks every file is served. Older
+zips stay on the site.
