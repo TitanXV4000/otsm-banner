@@ -11,7 +11,8 @@ with a small label over each value.
   account number, region, headquarters). Click to keep it open. The name at the top of a card opens the contact's or
   account's page in OTSM. The account card also lists the **Support team** from the entitlement fields (TAM, SAM, Accountable
   Premium Manager, Enterprise Support Manager, assignment group): the case's entitlement, or the account's in-use ones when
-  that has none. Phone numbers open the default phone app or Jabber (setting).
+  that has none. Then the case's active Special Handling Notes (mostly on the account; often where the SAM and named
+  engineer are written down). Phone numbers open the default phone app or Jabber (setting).
 - Case icon next to the contact: other cases, on a "Contact: <name>" or "Account: <name>" tab, newest first, with links.
   The current case is highlighted and closed cases are greyed. The contact tab includes cases the contact follows
   (SMAX FollowedByUsers; their portal lists them too), marked Following with that case's contact and account.

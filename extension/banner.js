@@ -259,7 +259,8 @@
     const id = current.req.RequestToCompany;
     if (!current.company) current.company = await getOne('Company', id, 'DisplayLabel,Code,TimeZone,RoutingRegion_c,Headquarters.DisplayLabel,CompanyType');
     if (!current.team) current.team = await supportTeam().catch(() => ({ rows: [] }));
-    const co = current.company, team = current.team;
+    if (!current.notes) current.notes = await handlingNotes().catch(() => []);
+    const co = current.company, team = current.team, notes = current.notes;
     return el('div', null,
       el('div', { class: 'otsmb-card-title' }, el('a', { href: companyUrl(id), title: 'Open the account in OTSM' }, co.DisplayLabel || '')),
       el('table', { class: 'otsmb-card' }, el('tbody', null,
@@ -273,7 +274,20 @@
         el('table', { class: 'otsmb-card' }, el('tbody', null, team.rows.map(t => el('tr', null, el('th', null, t.role),
           el('td', null, t.id ? el('a', { href: personUrl(t.id), title: 'Open in OTSM' }, person(t.name)) : t.name,
             t.email ? [' · ', el('a', { href: 'mailto:' + t.email }, t.email)] : null, t.phone ? [' · ', tel(t.phone)] : null,
-            t.plans ? el('div', { class: 'otsmb-dim' }, t.plans) : null)))))) : null);
+            t.plans ? el('div', { class: 'otsmb-dim' }, t.plans) : null)))))) : null,
+      notes.length ? el('div', { class: 'otsmb-team' },
+        el('div', { class: 'otsmb-card-sub' }, 'Special handling notes'),
+        notes.map(n => el('div', { class: 'otsmb-note' }, n))) : null);
+  }
+
+  // The case's active Special Handling Notes (the same list as the case page's; most are on the account), as plain text
+  async function handlingNotes() {
+    const { rows } = await getList('SpecialHandlingNotes_c', `(SpecialHandlingNotesForRequests_c[Id = '${current.req.Id}'])`, 'Id,Message_c,Status_c,PhaseId');
+    return rows.filter(n => (n.Status_c || n.PhaseId || '').startsWith('Active')).map(n => {
+      const doc = new DOMParser().parseFromString(n.Message_c || '', 'text/html');   // inert: nothing runs or loads
+      doc.querySelectorAll('p, div, li, br, tr').forEach(b => b.append('\n'));
+      return doc.body.textContent.replace(/\n{2,}/g, '\n').trim();
+    }).filter(Boolean);
   }
 
   // Account managers and the premium support group, from the entitlement fields: the case's entitlement, or when that has
