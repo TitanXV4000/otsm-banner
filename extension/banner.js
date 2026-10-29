@@ -32,12 +32,15 @@
   const personUrl = id => `/admin/people/persons/details/${id}/general?TENANTID=${tenant()}`;
   const companyUrl = id => `/saw/Company/details/${id}/general?TENANTID=${tenant()}`;
 
+  // An ICON string as an SVG element (parsed as SVG, so nothing in it can run)
+  const svg = text => document.importNode(new DOMParser().parseFromString(text.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" '), 'image/svg+xml').documentElement, true);
+
   function el(tag, attrs, ...kids) {
     const n = document.createElement(tag);
     for (const [k, v] of Object.entries(attrs || {})) {
       if (v === null || v === undefined || v === false) continue;
       if (k === 'class') n.className = v;
-      else if (k === 'html') n.innerHTML = v;            // only for the fixed ICON strings
+      else if (k === 'html') n.append(svg(v));           // only the fixed ICON strings
       else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
       else n.setAttribute(k, v);
     }
@@ -51,8 +54,12 @@
     try { return new Date().toLocaleTimeString('en-US', { timeZone: tz, hour: 'numeric', minute: '2-digit' }); } catch (e) { return ''; }
   }
 
+  // Firefox runs a content script's own fetch as the extension; content.fetch sends it as the page does (OTSM's
+  // XSRF check and cookies then work the same as in Chrome)
+  const pageFetch = (typeof content !== 'undefined' && content && typeof content.fetch === 'function') ? content.fetch.bind(content) : fetch;
+
   async function api(path) {
-    const res = await fetch(`/rest/${tenant()}/ems/${path}`, { credentials: 'include', headers: { Accept: 'application/json' } });
+    const res = await pageFetch(`/rest/${tenant()}/ems/${path}`, { credentials: 'include', headers: { Accept: 'application/json' } });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
   }
@@ -165,9 +172,12 @@
     for (const n of bar.querySelectorAll('.otsmb-col-contact .otsmb-name')) n.removeAttribute('title');
     if (!t) return;
     bar.classList.add('otsmb-measure');   // the title at its natural width
-    let over = bar.scrollWidth - bar.clientWidth;
+    // how far the last item reaches past the banner's inner right edge (not scrollWidth: browsers differ on the padding)
+    const box = bar.getBoundingClientRect(), last = bar.lastElementChild;
+    let over = last ? last.getBoundingClientRect().right - (box.right - parseFloat(getComputedStyle(bar).paddingRight) - bar.clientLeft) : 0;
     let T = t.offsetWidth, A = a ? a.offsetWidth : 0, C = c ? c.offsetWidth : 0;
     bar.classList.remove('otsmb-measure');
+    over = Math.ceil(over);
     if (over <= 0) return;
     const take = (have, floor) => { const d = Math.max(0, Math.min(over, have - floor)); over -= d; return have - d; };
     if (!a) T = take(T, FIT_MIN);
@@ -511,7 +521,7 @@
     const cur = await getOne('Request', id, 'Id,Status,LastUpdateTime');
     if (cur.Status === status) return;
     const xsrf = decodeURIComponent((document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/) || [])[1] || '');
-    const res = await fetch(`/rest/${tenant()}/ems/bulk`, { method: 'POST', credentials: 'include',
+    const res = await pageFetch(`/rest/${tenant()}/ems/bulk`, { method: 'POST', credentials: 'include',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-XSRF-TOKEN': xsrf },
       body: JSON.stringify({ entities: [{ entity_type: 'Request', properties: { Id: id, LastUpdateTime: cur.LastUpdateTime, Status: status } }], operation: 'UPDATE' }) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);

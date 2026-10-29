@@ -85,3 +85,11 @@ from the real banner code with made-up API answers (no real case data), then `si
 the version filled in, the screenshots and `otsm-banner-<version>.zip`); `site/deploy.sh` builds and uploads it
 (ssh tsanford@trevman.com with phoenix's key, `~/www/trevman/otsm-banner/`) and checks every file is served. Older
 zips stay on the site.
+
+## Firefox
+The same code runs in Firefox (128 or later). `site/build.sh` also makes `dist/otsm-banner-<version>-firefox.zip`:
+the extension with Firefox's manifest from `site/firefox-manifest.py` (background script instead of the service worker,
+add-on ID `otsm-banner@trevman.com`, host access to the OTSM site granted at install, no data collection). Firefox only
+keeps unsigned add-ons until it restarts, so that zip is signed by Mozilla as an unlisted (private) add-on, giving an
+`.xpi` that installs permanently. In Firefox the content script's requests go through `content.fetch`, so OTSM sees
+them as the page's own (cookies and the XSRF check as in Chrome).
