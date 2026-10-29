@@ -178,11 +178,9 @@
 
   // FTS accounts in WinSCP (winscp-ftp:// opens WinSCP rather than another FTP handler). skip-domain-check: SMAX's
   // "External link navigation" warning (platform.js, click handler on body) skips links with that attribute.
-  // FTS: the button opens the account in WinSCP, FileZilla or the default FTP app (setting); the icon next to it copies
-  // the ftp://user:pass@host/ URL, which FileZilla's Quickconnect and most FTP programs accept.
-  // filezilla-ftp:// is our own link type, set up by extras/filezilla-setup.reg: it runs FileZilla with the ftp:// URL
-  // (Windows won't let FileZilla be picked as the default app for ftp:// links).
-  const FTS_APPS = { winscp: ['winscp-ftp://', 'WinSCP'], filezilla: ['filezilla-ftp://', 'FileZilla'], ftp: ['ftp://', 'your FTP app'] };
+  // FTS: the button opens the account in WinSCP or the default FTP app (setting: whatever Windows has for ftp:// links);
+  // the icon next to it copies the ftp://user:pass@host/ URL, which FileZilla's Quickconnect and most FTP programs accept
+  const FTS_APPS = { winscp: ['winscp-ftp://', 'WinSCP'], ftp: ['ftp://', 'your FTP app'] };
   function ftsLinks(r) {
     let host = FTS_HOST;
     try { if (r.FTSLogin_c) host = new URL(r.FTSLogin_c).host; } catch (e) { /* keep the default */ }
@@ -192,8 +190,7 @@
     if (settings.fts !== 'customer') accounts.push({ user: r.FTSHostAccount_c, pass: r.FTSHostPassword_c, text: both ? 'Host' : 'FTS', what: 'host account' });
     if (settings.fts !== 'host') accounts.push({ user: r.FTSCustAccount_c, pass: r.FTSCustPassword_c, text: both ? 'Cust' : 'FTS', what: 'customer account' });
     const groups = accounts.filter(a => a.user && a.pass).map(a => {
-      const enc = t => encodeURIComponent(t).replace(/[!'()*]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase());   // no quotes for the FileZilla command line
-      const login = `${enc(a.user)}:${enc(a.pass)}@${host}/`;
+      const login = `${encodeURIComponent(a.user)}:${encodeURIComponent(a.pass)}@${host}/`;
       return el('span', { class: 'otsmb-fts' },
         el('a', { class: 'otsmb-btn' + (both ? ' otsmb-btn-sm' : ''), href: scheme + login, 'skip-domain-check': '',
           title: `Open ${host} in ${appName} with the FTS ${a.what} ${a.user}` }, a.text),
