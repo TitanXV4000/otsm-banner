@@ -137,7 +137,7 @@
   }
   function iconButton(icon, title, open) {
     return el('button', { class: 'otsmb-icon', type: 'button', title, 'aria-label': title, html: ICON[icon],
-      onclick: e => { e.stopPropagation(); toggleFloating(e.currentTarget, open, true); } });
+      onclick: e => { e.stopPropagation(); toggleFloating(e.currentTarget, open, true, true); } });
   }
 
   // A name that shows a contact card on hover; a click keeps it open
@@ -166,19 +166,20 @@
   }
 
   // ---------- popups and contact cards ----------
-  function toggleFloating(anchor, build, pinned) {
+  function toggleFloating(anchor, build, pinned, closable) {
     if (floating && floating.anchor === anchor) {
       if (pinned && !floating.pinned) { floating.pinned = true; floating.box.classList.add('otsmb-pinned'); return; }
       closeFloating(); return;
     }
-    openFloating(anchor, build, pinned);
+    openFloating(anchor, build, pinned, closable);
   }
-  function openFloating(anchor, build, pinned) {
+  function openFloating(anchor, build, pinned, closable) {
     closeFloating();
     const box = el('div', { class: 'otsmb-float' + (pinned ? ' otsmb-pinned' : '') });
     box.addEventListener('click', e => e.stopPropagation());
     box.addEventListener('mouseleave', () => { if (floating && !floating.pinned) { hoverTimer = setTimeout(closeFloating, 300); } });
     box.addEventListener('mouseenter', () => clearTimeout(hoverTimer));
+    if (closable) box.append(el('button', { class: 'otsmb-close', type: 'button', title: 'Close', 'aria-label': 'Close', onclick: closeFloating }, '×'));
     document.body.append(box);
     floating = { anchor, box, pinned };
     const a = anchor.getBoundingClientRect();
@@ -286,19 +287,19 @@
       const expired = x.EndDate_c && +x.EndDate_c < now;
       const other = x.OwnerCompany && x.OwnerCompany !== r.RequestToCompany;
       return el('tr', { class: (x.Id === r.Entitlement ? 'otsmb-current ' : '') + (inUse(x) ? '' : 'otsmb-closed') },
+        mine ? el('td', { class: 'otsmb-center', title: entitled.has(x.Id) ? `${contact} is an entitled user` : '' }, entitled.has(x.Id) ? '✓' : '') : null,
         el('td', null, el('a', { href: recordUrl('Entitlement', x.Id) }, x.Id)),
         el('td', null, product(x) || '(no product)', other ? el('div', { class: 'otsmb-dim' }, 'Owned by ' + rel(x, 'OwnerCompany', 'DisplayLabel')) : null),
         el('td', null, x.DisplayLabel || ''),
         el('td', null, rel(x, 'Contract', 'DisplayLabel')),
         el('td', null, dateOnly(x.StartDate_c)),
         el('td', null, dateOnly(x.EndDate_c)),
-        el('td', null, x.PhaseId === 'Inuse' ? (expired ? 'Expired' : 'In use') : (x.PhaseId || '')),
-        mine ? el('td', { class: 'otsmb-center', title: entitled.has(x.Id) ? `${contact} is an entitled user` : '' }, entitled.has(x.Id) ? '✓' : '') : null);
+        el('td', null, x.PhaseId === 'Inuse' ? (expired ? 'Expired' : 'In use') : (x.PhaseId || '')));
     });
     return el('div', null,
       el('div', { class: 'otsmb-card-title' }, `${rows.length} entitlement${rows.length === 1 ? '' : 's'}`,
         el('span', { class: 'otsmb-dim' }, (mine ? ` · ✓ = ${contact} is an entitled user (${entitled.size})` : '') + (r.Entitlement ? " · this case's is highlighted" : ''))),
-      rows.length ? el('div', { class: 'otsmb-scroll' }, table(['Entitlement', 'Product', 'Support plan', 'Contract', 'Start', 'End', 'State'].concat(mine ? ['Contact'] : []), body))
+      rows.length ? el('div', { class: 'otsmb-scroll' }, table((mine ? ['Contact'] : []).concat(['Entitlement', 'Product', 'Support plan', 'Contract', 'Start', 'End', 'State']), body))
         : el('div', { class: 'otsmb-dim' }, 'None found for this account.'));
   }
 

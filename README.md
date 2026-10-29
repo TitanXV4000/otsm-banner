@@ -11,7 +11,7 @@ with a small label over each value:
 - Case icon next to the customer: their other cases, or the whole account's, newest first, with links. The current case
   is highlighted and closed cases are greyed.
 - Shield icon next to the account: its entitlements. Columns: entitlement number (link), product, support plan,
-  contract, start, end, state, and a ✓ when the case's contact is one of the entitlement's **Entitled users**.
+  contract, start, end and state, with a ✓ first when the case's contact is one of the entitlement's **Entitled users**.
   In-use entitlements are listed first, then the latest end date. The case's own entitlement is highlighted.
   Entitlements another company delegated to this account are included and say who owns them.
 - **FTS**: opens the case's FTS host account in WinSCP (`winscp-ftp://` link; WinSCP must be installed).

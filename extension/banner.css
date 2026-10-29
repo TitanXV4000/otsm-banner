@@ -43,11 +43,14 @@ html.otsmb-on .pl-entity-page-minimized-header { top: calc(56px + var(--otsmb-h)
 
 /* Popups and contact cards */
 .otsmb-float {
-  position: fixed; z-index: 1045; max-width: 760px; min-width: 260px; max-height: 70vh; overflow: auto;
+  position: fixed; z-index: 1045; max-width: calc(100vw - 16px); min-width: 260px; max-height: 70vh; overflow: auto;
   background: #fff; color: #1d2733; border: 1px solid #c4cad1; border-radius: 6px; padding: 10px 12px;
   box-shadow: 0 6px 20px rgba(0,0,0,.2); font: 13px/1.4 "Segoe UI", Roboto, Arial, sans-serif;
 }
 .otsmb-float.otsmb-pinned { border-color: #0b5cad; }
+.otsmb-close { position: absolute; top: 4px; right: 6px; border: 0; background: none; font-size: 22px; line-height: 1; color: #5a6470; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+.otsmb-close:hover { background: #e9ecef; color: #1d2733; }
+.otsmb-float .otsmb-tabs, .otsmb-float .otsmb-card-title { padding-right: 32px; }
 .otsmb-float a { color: #0b5cad; text-decoration: none; }
 .otsmb-float a:hover { text-decoration: underline; }
 .otsmb-card-title { font-weight: 700; font-size: 14px; margin-bottom: 6px; }
