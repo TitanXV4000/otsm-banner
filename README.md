@@ -17,7 +17,7 @@ with a small label over each value.
   none). Entitlements owned by another company (delegated, or the contact's) are included and say who owns them.
 - **FTS**: opens the case's FTS account in WinSCP (`winscp-ftp://` link; WinSCP must be installed). The link carries
   `skip-domain-check`, so SMAX's "External link navigation" warning doesn't appear; Chrome still asks before opening an app.
-- Refresh and ⚙ (settings) buttons. The banner also reloads when you come back to the tab after a minute or more.
+- A ⚙ (settings) button. The banner reloads with SMAX's own Refresh button on the case, and when you come back to the tab after a minute or more.
 
 ## Settings
 ⚙ on the banner, or right-click the extension's icon > Options. Saved in the browser profile (`chrome.storage.sync`);
@@ -28,7 +28,7 @@ open banners redraw straight away.
 - Contact cards: open on hover (default) or on click only.
 - Other cases popup opens on the Contact (default) or Account tab.
 - Names: First Last (default) or Last, First (as OTSM stores them).
-- FTS button: host account (default), customer account, or both.
+- FTS button: host account (default), customer account, or both (small Host and Cust buttons under an FTS label).
 
 All data comes from the SMAX EMS REST API (`/rest/<tenant>/ems/...`) with your own browser login, so it only shows what
 your OTSM account can see. Nothing is stored or sent anywhere else. API notes: `qmon/notes/otsm-api.md`

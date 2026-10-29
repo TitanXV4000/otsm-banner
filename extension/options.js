@@ -50,10 +50,12 @@
       if (id === 'account') return [el('span', { class: 'otsmb-name' }, 'Ndus System Information Tech Sv…'), icon()];
       return SAMPLE[id][1];
     };
-    const ftsText = s.fts === 'both' ? ['FTS host', 'FTS customer'] : ['FTS'];
+    const fts = s.fts === 'both'
+      ? [el('div', { class: 'otsmb-col' }, el('div', { class: 'otsmb-label' }, 'FTS'), el('div', { class: 'otsmb-value otsmb-fts2' }, ...['Host', 'Cust'].map(t => el('span', { class: 'otsmb-btn otsmb-btn-sm' }, t))))]
+      : [el('span', { class: 'otsmb-btn' }, 'FTS')];
     b.replaceChildren(...s.fields.filter(f => f.on).map(f => el('div', { class: 'otsmb-col' + (f.id === 'title' ? ' otsmb-grow' : '') },
       el('div', { class: 'otsmb-label' }, SAMPLE[f.id][0]), el('div', { class: 'otsmb-value' }, value(f.id)))),
-      el('div', { class: 'otsmb-actions' }, ...ftsText.map(t => el('span', { class: 'otsmb-btn' }, t)), el('span', { class: 'otsmb-icon' }, '↻'), el('span', { class: 'otsmb-icon' }, '⚙')));
+      el('div', { class: 'otsmb-actions' }, ...fts, el('span', { class: 'otsmb-icon' }, '⚙')));
   }
 
   // ---------- fields: tick, arrows, drag ----------
@@ -99,7 +101,7 @@
     radios('cardsOnHover', [[true, 'Open on hover (click keeps it open)'], [false, 'Open on click only']], () => s.cardsOnHover, v => { s.cardsOnHover = v; });
     radios('casesTab', [['contact', 'Contact'], ['account', 'Account']], () => s.casesTab, v => { s.casesTab = v; });
     radios('names', [['first', 'First Last'], ['last', 'Last, First']], () => s.names, v => { s.names = v; });
-    radios('fts', [['host', 'Host account'], ['customer', 'Customer account'], ['both', 'Both (two buttons)']], () => s.fts, v => { s.fts = v; });
+    radios('fts', [['host', 'Host account'], ['customer', 'Customer account'], ['both', 'Both (Host and Cust buttons)']], () => s.fts, v => { s.fts = v; });
   }
 
   $('customBg').addEventListener('input', e => { s.customBg = e.target.value; changed(); });

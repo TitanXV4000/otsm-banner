@@ -145,7 +145,7 @@
     }
     const r = c.req;
     b.append(...settings.fields.filter(f => f.on && FIELD_RENDER[f.id]).map(f => FIELD_RENDER[f.id](r)).filter(Boolean),
-      el('div', { class: 'otsmb-actions' }, ...ftsLinks(r), refreshButton(), settingsButton()));
+      el('div', { class: 'otsmb-actions' }, ...ftsLinks(r), settingsButton()));
   }
 
   // The Options page can only be opened by the extension's service worker
@@ -154,6 +154,7 @@
     return el('button', { class: 'otsmb-icon', type: 'button', title: 'Banner settings', html: ICON.gear, onclick: () => chrome.runtime.sendMessage({ openOptions: true }) });
   }
 
+  // Only shown when loading failed; otherwise SMAX's own Refresh button reloads the banner too (see watchRefresh)
   function refreshButton() {
     return el('button', { class: 'otsmb-icon', type: 'button', title: 'Refresh', html: ICON.refresh, onclick: () => load(current.id, true) });
   }
@@ -179,11 +180,14 @@
     try { if (r.FTSLogin_c) host = new URL(r.FTSLogin_c).host; } catch (e) { /* keep the default */ }
     const both = settings.fts === 'both';
     const accounts = [];
-    if (settings.fts !== 'customer') accounts.push({ user: r.FTSHostAccount_c, pass: r.FTSHostPassword_c, text: both ? 'FTS host' : 'FTS', what: 'host account' });
-    if (settings.fts !== 'host') accounts.push({ user: r.FTSCustAccount_c, pass: r.FTSCustPassword_c, text: both ? 'FTS customer' : 'FTS', what: 'customer account' });
+    if (settings.fts !== 'customer') accounts.push({ user: r.FTSHostAccount_c, pass: r.FTSHostPassword_c, text: both ? 'Host' : 'FTS', what: 'host account' });
+    if (settings.fts !== 'host') accounts.push({ user: r.FTSCustAccount_c, pass: r.FTSCustPassword_c, text: both ? 'Cust' : 'FTS', what: 'customer account' });
     const links = accounts.filter(a => a.user && a.pass).map(a => el('a', { class: 'otsmb-btn', href: `winscp-ftp://${encodeURIComponent(a.user)}:${encodeURIComponent(a.pass)}@${host}/`,
       'skip-domain-check': '', title: `Open ${host} in WinSCP with the FTS ${a.what} ${a.user}` }, a.text));
-    return links.length ? links : [el('span', { class: 'otsmb-dim', title: 'This case has no FTS account' }, 'No FTS')];
+    if (!links.length) return [el('span', { class: 'otsmb-dim', title: 'This case has no FTS account' }, 'No FTS')];
+    if (!both) return links;
+    links.forEach(a => a.classList.add('otsmb-btn-sm'));
+    return [el('div', { class: 'otsmb-col' }, el('div', { class: 'otsmb-label' }, 'FTS'), el('div', { class: 'otsmb-value otsmb-fts2' }, ...links))];
   }
 
   function copy(node, text) {
@@ -359,6 +363,12 @@
     if (!current || current.id !== id) load(id);
     else if (!bar || !document.body.contains(bar)) render();   // the page replaced <body> contents
   }
+  // SMAX's Refresh button on the case reloads the case without reloading the page; reload the banner with it.
+  // (List pages have their own Refresh buttons, but there's no case open there.)
+  document.addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('button[aria-label="Refresh"]');
+    if (b && current && !b.closest('#otsmb, .otsmb-float')) load(current.id, true);
+  }, true);
   OTSMB.onChange(s => { settings = s; if (current && bar) render(); });   // Options page changes show at once
   OTSMB.load().then(s => {
     settings = s;

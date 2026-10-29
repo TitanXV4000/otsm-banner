@@ -22,7 +22,7 @@ var OTSMB = (() => {
   // bg: background, fg: text, label: the small labels, icon: icons and name underlines, line: bottom edge
   const COLORS = {
     navy: { name: 'OTSM navy', bg: '#00264b', fg: '#ffffff', label: '#9db4cc', icon: '#8cc4ff', line: 'rgba(255,255,255,.22)' },
-    light: { name: 'Light', bg: '#fff8e1', fg: '#1d2733', label: '#5a6470', icon: '#0b5cad', line: '#e8b400' },
+    light: { name: 'Light grey', bg: '#eef1f4', fg: '#1d2733', label: '#5a6470', icon: '#0b5cad', line: '#c4cad1' },
     grey: { name: 'Dark grey', bg: '#2b2f33', fg: '#f1f3f5', label: '#a8b0b8', icon: '#8cc4ff', line: 'rgba(255,255,255,.2)' },
     contrast: { name: 'High contrast', bg: '#000000', fg: '#ffffff', label: '#ffd400', icon: '#6fd3ff', line: '#ffd400' },
   };
