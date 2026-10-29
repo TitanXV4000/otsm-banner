@@ -47,7 +47,7 @@
       if (id === 'title') { const t = s.titleMax && SAMPLE_TITLE.length > s.titleMax ? SAMPLE_TITLE.slice(0, s.titleMax - 1).trimEnd() + '…' : SAMPLE_TITLE; return el('span', { class: 'otsmb-title' }, t); }
       if (id === 'contact') return [el('span', { class: 'otsmb-name' }, s.names === 'first' ? 'Oskar Salm' : 'Salm, Oskar'), icon()];
       if (id === 'owner') return s.names === 'first' ? 'Trevor Sanford' : 'Sanford, Trevor';
-      if (id === 'account') return [el('span', { class: 'otsmb-name' }, 'Ndus System Information Tech Sv…'), icon()];
+      if (id === 'account') return [el('span', { class: 'otsmb-name' }, 'OpenText - OpenText'), icon()];
       return SAMPLE[id][1];
     };
     const fts = s.fts === 'both'
