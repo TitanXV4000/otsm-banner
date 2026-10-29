@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "OTSM case banner",
-  "version": "1.7.2.1",
+  "version": "1.7.3",
   "description": "Case number, title, priority, status, contact, account, owner and dates at the top of every OTSM (SMAX) case, with the contact's other cases, the account's entitlements and FTS in WinSCP.",
   "permissions": ["storage"],
   "options_ui": { "page": "options.html", "open_in_tab": true },
