@@ -100,3 +100,10 @@ keeps unsigned add-ons until it restarts, so that zip is signed by Mozilla as an
 `.xpi` that installs permanently: `site/sign-firefox.sh` (keys in qmon/data/amo.env; each version can be signed only
 once, so signed .xpi files are kept in the gitignored `signed/`). `site/deploy.sh` signs and uploads it with the page. In Firefox the content script's requests go through `content.fetch`, so OTSM sees
 them as the page's own (cookies and the XSRF check as in Chrome).
+
+## Chrome Web Store
+Listed unlisted under Trevor's developer account (setup started 2026-10-30). `store/listing.md` has the text for the
+dashboard's Store listing and Privacy tabs; `store/make.js` makes the icon (`extension/icons/`), promo tile and
+screenshots in `store/img/` from the fake-data web page screenshots. `site/build.sh` also builds
+`otsm-banner-<version>-chrome-store.zip` (manifest at the root); `site/deploy.sh` moves it to `store/upload/`
+(gitignored) for uploading by hand. Privacy policy: `site/privacy.html` (https://trevman.com/otsm-banner/privacy.html).
