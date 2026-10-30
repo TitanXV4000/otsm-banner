@@ -116,7 +116,7 @@
   // Each field's column; null leaves it out (Product Dev ID when the case has none)
   const FIELD_RENDER = {
     case: r => col('Case', null, el('span', { class: 'otsmb-id', title: 'Click to copy the case number', onclick: e => copy(e.currentTarget, r.Id) }, r.Id)),
-    title: r => { const t = r.DisplayLabel || ''; return col('Title', 'otsmb-grow', el('span', { class: 'otsmb-title', title: t }, cut(t, settings.titleMax))); },
+    title: r => { const t = r.DisplayLabel || ''; return col('Title', 'otsmb-grow', el('span', { class: 'otsmb-title otsmb-copyable', title: t + '\n\nClick to copy the case number and title', onclick: e => copy(e.currentTarget, `${r.Id} - ${t}`) }, cut(t, settings.titleMax))); },
     priority: r => { const p = PRIORITY[r.Priority] || r.Priority || ''; return col('Priority', null, p ? el('span', { class: 'otsmb-pill otsmb-pr-' + p.toLowerCase() }, p) : ''); },
     status: r => { const st = STATUS[r.Status] || r.Status || ''; return col('Status', null, st ? el('span', { class: 'otsmb-pill otsmb-st-' + (r.Status || '').replace(/[^A-Za-z]/g, '') }, st) : ''); },
     owner: r => col('Owner', null, person(rel(r, 'OwnedByPerson', 'Name')) || '(none)'),

@@ -6,7 +6,7 @@ from Reports or contact pages (`/admin/...`) to a case without loading a new pag
 never added to such a tab (the banner then only appeared after F5). The layout follows the old Salesforce case header,
 with a small label over each value.
 
-- Fields (choose which and their order in the settings): **Case** (click to copy), **Title** (shortened; hover for all of it),
+- Fields (choose which and their order in the settings): **Case** (click to copy), **Title** (shortened; hover for all of it; click to copy "number - title"),
   **Priority** and **Status** badges, **Owner**, **Contact**, **Account**, **Product**, **Entitlement** (support plan, links to it),
   **Product Dev ID** (only when the case has one; each ID opens its Quixy page in a new tab, opened by the extension: Quixy is
   on a private address, and a link from the OTSM page made Chrome ask for "local network access"), **Created**, **Updated**.
