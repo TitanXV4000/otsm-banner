@@ -5,7 +5,7 @@ Upload zip: `store/upload/otsm-banner-<version>-chrome-store.zip` (made by `site
 
 ## Store listing tab
 
-**Summary** (from the manifest's description; the dashboard shows it, it isn't typed in)
+**Summary** (the manifest's description, 132 characters at most; the dashboard shows it, it isn't typed in)
 
 **Description**
 
