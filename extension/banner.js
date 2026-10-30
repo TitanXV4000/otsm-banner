@@ -57,9 +57,13 @@
   // XSRF check and cookies then work the same as in Chrome)
   const pageFetch = (typeof content !== 'undefined' && content && typeof content.fetch === 'function') ? content.fetch.bind(content) : fetch;
 
+  // OTSM answers 401 once the session has timed out (or sends a sign-in page instead of JSON)
+  const SIGNED_OUT = 'Signed out of OTSM: reload the page (F5) to sign in again';
+  const httpError = res => new Error(res.status === 401 ? SIGNED_OUT : `HTTP ${res.status}`);
   async function api(path) {
     const res = await pageFetch(`/rest/${tenant()}/ems/${path}`, { credentials: 'include', headers: { Accept: 'application/json' } });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) throw httpError(res);
+    if (res.redirected && !/json/i.test(res.headers.get('content-type') || '')) throw new Error(SIGNED_OUT);
     return res.json();
   }
   const flat = e => Object.assign({}, e.properties, { _rel: e.related_properties || {} });
@@ -158,7 +162,10 @@
     const c = current;
     if (!c.req) {
       b.append(col('Case', null, el('span', { class: 'otsmb-id' }, c.id)),
-        col('', 'otsmb-grow', el('span', { class: c.error ? 'otsmb-err' : 'otsmb-dim' }, c.error ? `Couldn't load the case: ${c.error}` : 'Loading…')),
+        c.error === SIGNED_OUT
+          ? col('', 'otsmb-grow', el('span', { class: 'otsmb-value' }, el('span', { class: 'otsmb-err' }, 'Signed out of OTSM.'),
+              el('button', { type: 'button', class: 'otsmb-btn otsmb-btn-sm', onclick: () => location.reload() }, 'Reload to sign in')))
+          : col('', 'otsmb-grow', el('span', { class: c.error ? 'otsmb-err' : 'otsmb-dim' }, c.error ? `Couldn't load the case: ${c.error}` : 'Loading…')),
         el('div', { class: 'otsmb-actions' }, refreshButton(), settingsButton()));
       return;
     }
@@ -284,7 +291,7 @@
     box.append(body);
     place();
     Promise.resolve(build()).then(node => { if (floating && floating.box === box) { body.replaceWith(node); place(); } })
-      .catch(err => { body.textContent = `Couldn't load: ${err.message}`; body.className = 'otsmb-err'; });
+      .catch(err => { body.textContent = err.message === SIGNED_OUT ? SIGNED_OUT : `Couldn't load: ${err.message}`; body.className = 'otsmb-err'; });
   }
   function closeFloating() { if (floating) { floating.box.remove(); floating = null; } }
   document.addEventListener('click', () => { if (floating) closeFloating(); });
@@ -545,7 +552,7 @@
     const res = await pageFetch(`/rest/${tenant()}/ems/bulk`, { method: 'POST', credentials: 'include',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-XSRF-TOKEN': xsrf },
       body: JSON.stringify({ entities: [{ entity_type: 'Request', properties: { Id: id, LastUpdateTime: cur.LastUpdateTime, Status: status } }], operation: 'UPDATE' }) });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) throw httpError(res);
     const r = ((await res.json()).entity_result_list || [])[0];
     if (!r || r.completion_status !== 'OK') throw new Error((r && r.errorDetails && r.errorDetails.message) || "OTSM didn't save the change");
   }
