@@ -592,6 +592,23 @@
     const b = e.target.closest && e.target.closest('button[aria-label="Refresh"]');
     if (b && current && !b.closest('#otsmb, .otsmb-float')) load(current.id, true);
   }, true);
+  // SMAX's Save (the case's toolbar, or a dialog's Save) and Ctrl+S save without reloading the page. Once OTSM has the
+  // change (the case's LastUpdateTime moves), reload the banner; give up after about 20 seconds (nothing was changed).
+  let saveWatch = 0;
+  async function afterSave() {
+    if (!current || !current.req) return;
+    const id = current.id, before = current.req.LastUpdateTime, mine = ++saveWatch;
+    for (const wait of [1000, 1500, 2500, 5000, 10000]) {
+      await new Promise(r => setTimeout(r, wait));
+      if (mine !== saveWatch || !current || current.id !== id) return;
+      try { if ((await getOne('Request', id, 'LastUpdateTime')).LastUpdateTime !== before) { load(id, true); return; } } catch (e) { /* try again */ }
+    }
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('[data-aid^="tool-bar-btn-save"], button.btn-primary');
+    if (b && !b.closest('#otsmb, .otsmb-float') && (b.dataset.aid || /^\s*save\b/i.test(b.innerText))) afterSave();
+  }, true);
+  document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key && e.key.toLowerCase() === 's') afterSave(); }, true);
   OTSMB.onChange(s => { settings = s; if (current && bar) render(); });   // Options page changes show at once
   OTSMB.load().then(s => {
     settings = s;

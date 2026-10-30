@@ -32,7 +32,7 @@ with a small label over each value.
   others) to pick Ready, In Progress, Pending End User, Needs Attention, Pending Internal or Suspended; it saves at once
   (the same `ems/bulk` UPDATE SMAX's Save sends, with the case's LastUpdateTime, so a case changed since is refused with
   OTSM's message) and refreshes the list. Not Resolved or Closed, which need a solution and completion code.
-- A ⚙ (settings) button. The banner reloads with SMAX's own Refresh button on the case, and when you come back to the tab after a minute or more.
+- A ⚙ (settings) button. The banner reloads with SMAX's own Refresh button on the case, after a Save (or Ctrl+S) once OTSM has the change, and when you come back to the tab after a minute or more.
 
 ## Settings
 ⚙ on the banner, or right-click the extension's icon > Options. Saved in the browser profile (`chrome.storage.sync`);
