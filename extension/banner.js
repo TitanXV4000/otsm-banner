@@ -47,10 +47,11 @@
     return n;
   }
 
-  const dateTime = ms => ms ? new Date(+ms).toLocaleString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
-  const dateOnly = ms => ms ? new Date(+ms).toLocaleDateString('en-US', { timeZone: 'UTC' }) : '';   // OTSM DATE fields are midnight UTC
+  // Dates and times in the browser's language (its order, 12/24-hour clock), not one fixed format
+  const dateTime = ms => ms ? new Date(+ms).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '';
+  const dateOnly = ms => ms ? new Date(+ms).toLocaleDateString(undefined, { timeZone: 'UTC' }) : '';   // OTSM DATE fields are midnight UTC
   function localTime(tz) {
-    try { return new Date().toLocaleTimeString('en-US', { timeZone: tz, hour: 'numeric', minute: '2-digit' }); } catch (e) { return ''; }
+    try { return new Date().toLocaleTimeString(undefined, { timeZone: tz, timeStyle: 'short' }); } catch (e) { return ''; }
   }
 
   // Firefox runs a content script's own fetch as the extension; content.fetch sends it as the page does (OTSM's
@@ -110,7 +111,7 @@
   const person = n => { const m = settings.names === 'first' && /^([^,]+),\s*(.+)$/.exec(n || ''); return m ? `${m[2]} ${m[1]}` : (n || ''); };
   const cut = (text, max) => max && text.length > max ? text.slice(0, max - 1).trimEnd() + '…' : text;
   const cutSpan = (text, max) => el('span', { title: text.length > max ? text : null }, cut(text, max));   // shortened, full text on hover
-  const shortDate = ms => ms ? new Date(+ms).toLocaleString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit', hour: 'numeric', minute: '2-digit' }) : '';
+  const shortDate = ms => ms ? new Date(+ms).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' }) : '';
 
   // One column of the banner: a small label over its value (the Salesforce case header layout)
   function col(label, cls, ...value) {
@@ -433,7 +434,7 @@
         el('td', null, STATUS[x.Status] || x.Status || ''),
         el('td', null, person(rel(x, 'OwnedByPerson', 'Name'))),
         scope === 'account' ? el('td', null, person(rel(x, 'RequestedForPerson', 'Name'))) : null,
-        el('td', null, x.EmsCreationTime ? new Date(+x.EmsCreationTime).toLocaleDateString('en-US') : '')));
+        el('td', null, x.EmsCreationTime ? new Date(+x.EmsCreationTime).toLocaleDateString() : '')));
       const open = rows.filter(x => !CLOSED.includes(x.Status)).length;
       wrap.replaceChildren(tabs,
         el('div', { class: 'otsmb-card-title' }, `${total} case${total === 1 ? '' : 's'}`, el('span', { class: 'otsmb-dim' }, (following ? ` · ${following} following` : '') + ` · ${open} open` + (total > rows.length ? ` · newest ${rows.length} shown` : ''))),
