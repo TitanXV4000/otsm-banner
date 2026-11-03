@@ -37,6 +37,9 @@ html.otsmb-on .pl-entity-page-minimized-header { top: calc(56px + var(--otsmb-h)
 #otsmb .otsmb-btn:hover { background: #3b8bf0; }
 #otsmb .otsmb-btn.otsmb-btn-sm { padding: 0 8px; font-size: 12px; line-height: 18px; }
 #otsmb .otsmb-fts2 { display: flex; gap: 4px; }
+#otsmb .otsmb-more { border: 0; background: rgba(127,127,127,.28); color: inherit; border-radius: 9px; padding: 0 6px; font: inherit; font-size: 11px; font-weight: 700; line-height: 16px; cursor: pointer; flex: none; }
+#otsmb .otsmb-more:hover { background: rgba(127,127,127,.45); }
+#otsmb .otsmb-more:focus:not(:focus-visible) { outline: none; }
 
 .otsmb-dim { color: #6b7480; }
 .otsmb-err { color: #b3261e; }
@@ -65,6 +68,8 @@ html.otsmb-on .pl-entity-page-minimized-header { top: calc(56px + var(--otsmb-h)
 .otsmb-card-title { font-weight: 700; font-size: 14px; margin-bottom: 6px; }
 .otsmb-team { margin-top: 8px; padding-top: 8px; border-top: 1px solid #e6e9ec; }
 .otsmb-card-sub { font-weight: 700; margin-bottom: 4px; }
+.otsmb-devids > div:not(.otsmb-card-sub) { padding: 2px 0; }
+.otsmb-devids a { cursor: pointer; }
 .otsmb-tel { white-space: nowrap; }
 .otsmb-float a.otsmb-teledit { margin-left: 5px; color: #6b7480; display: inline-flex; vertical-align: -1px; }
 .otsmb-float a.otsmb-teledit:hover { color: #0b5cad; text-decoration: none; }

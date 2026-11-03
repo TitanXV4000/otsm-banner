@@ -137,14 +137,26 @@
     // Product Dev ID: each ID (some cases list several) links to its Quixy page
     // Quixy is on a private address (10.x), so a link from the OTSM page (public) makes Chrome ask for "local network
     // access"; the extension's service worker opens it in a new tab instead, and the ID has no href for Chrome to connect to
-    devid: r => { const ids = String(r.ProductDevID_c || '').split(/[\s,;]+/).filter(Boolean);
-      return ids.length ? col('Product Dev ID', null, ...ids.map(id => el('a', { class: 'otsmb-link', role: 'link', tabindex: '0', title: `Open ${id} in Quixy`,
-        onclick: e => { e.preventDefault(); openQuixy(id); }, onauxclick: e => { if (e.button === 1) { e.preventDefault(); openQuixy(id); } },
-        onkeydown: e => { if (e.key === 'Enter') openQuixy(id); } }, id))) : null; },
+    // Several IDs (an OCTIM defect that spawned an OCTCR, say): the banner shows the CR, or else the first, and a +N
+    // button opens the whole list
+    devid: r => { const ids = devIds(r); if (!ids.length) return null;
+      const more = ids.length > 1 ? el('button', { class: 'otsmb-more', type: 'button', title: `All ${ids.length} Product Dev IDs: ${ids.join(', ')}`,
+        onclick: e => { e.stopPropagation(); toggleFloating(e.currentTarget, () => el('div', { class: 'otsmb-devids' },
+          el('div', { class: 'otsmb-card-sub' }, 'Product Dev IDs'), ...ids.map(id => el('div', null, quixyLink(id)))), true); } }, `+${ids.length - 1}`) : null;
+      return col('Product Dev ID', null, quixyLink(ids[0]), more); },
     created: r => col('Created', null, shortDate(r.EmsCreationTime)),
     updated: r => col('Updated', null, shortDate(r.LastUpdateTime)),
   };
 
+  function devIds(r) {
+    const ids = String(r.ProductDevID_c || '').split(/[\s,;]+/).filter(Boolean);
+    return ids.filter(id => /^OCTCR/i.test(id)).concat(ids.filter(id => !/^OCTCR/i.test(id)));   // CRs first
+  }
+  function quixyLink(id) {
+    return el('a', { class: 'otsmb-link', role: 'link', tabindex: '0', title: `Open ${id} in Quixy`,
+      onclick: e => { e.preventDefault(); openQuixy(id); }, onauxclick: e => { if (e.button === 1) { e.preventDefault(); openQuixy(id); } },
+      onkeydown: e => { if (e.key === 'Enter') openQuixy(id); } }, id);
+  }
   function openQuixy(id) {
     const url = QUIXY + encodeURIComponent(id);
     if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) chrome.runtime.sendMessage({ openQuixy: id });
