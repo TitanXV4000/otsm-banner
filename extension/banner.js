@@ -138,10 +138,10 @@
     // Quixy is on a private address (10.x), so a link from the OTSM page (public) makes Chrome ask for "local network
     // access"; the extension's service worker opens it in a new tab instead, and the ID has no href for Chrome to connect to
     // Several IDs (an OCTIM defect that spawned an OCTCR, say): the banner shows the CR, or else the first, and a +N
-    // button opens the whole list
+    // button opens the whole list, under the ID shown
     devid: r => { const ids = devIds(r); if (!ids.length) return null;
       const more = ids.length > 1 ? el('button', { class: 'otsmb-more', type: 'button', title: `All ${ids.length} Product Dev IDs: ${ids.join(', ')}`,
-        onclick: e => { e.stopPropagation(); toggleFloating(e.currentTarget, () => el('div', { class: 'otsmb-devids' },
+        onclick: e => { e.stopPropagation(); toggleFloating(e.currentTarget.previousElementSibling, () => el('div', { class: 'otsmb-devids' },
           el('div', { class: 'otsmb-card-sub' }, 'Product Dev IDs'), ...ids.map(id => el('div', null, quixyLink(id)))), true); } }, `+${ids.length - 1}`) : null;
       return col('Product Dev ID', null, quixyLink(ids[0]), more); },
     created: r => col('Created', null, shortDate(r.EmsCreationTime)),
