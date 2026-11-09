@@ -112,6 +112,8 @@
   const cut = (text, max) => max && text.length > max ? text.slice(0, max - 1).trimEnd() + '…' : text;
   const cutSpan = (text, max) => el('span', { title: text.length > max ? text : null }, cut(text, max));   // shortened, full text on hover
   const shortDate = ms => ms ? new Date(+ms).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' }) : '';
+  // A value with a "who" tooltip (Created by… / Last updated by…); plain, with no underline, when the who is unknown
+  const byInfo = (text, who, prefix) => who ? el('span', { class: 'otsmb-byinfo', title: prefix + who }, text) : el('span', null, text);
 
   // One column of the banner: a small label over its value (the Salesforce case header layout)
   function col(label, cls, ...value) {
@@ -123,8 +125,19 @@
     case: r => col('Case', null, el('span', { class: 'otsmb-id', title: 'Click to copy the case number', onclick: e => copy(e.currentTarget, r.Id) }, r.Id)),
     title: r => { const t = r.DisplayLabel || ''; return col('Title', 'otsmb-grow', el('span', { class: 'otsmb-title otsmb-copyable', title: t + '\n\nClick to copy the case number and title', onclick: e => copy(e.currentTarget, `${r.Id} - ${t}`) }, cut(t, settings.titleMax))); },
     priority: r => { const p = PRIORITY[r.Priority] || r.Priority || ''; return col('Priority', null, p ? el('span', { class: 'otsmb-pill otsmb-pr-' + p.toLowerCase() }, p) : ''); },
-    status: r => { const st = STATUS[r.Status] || r.Status || ''; return col('Status', null, st ? el('span', { class: 'otsmb-pill otsmb-st-' + (r.Status || '').replace(/[^A-Za-z]/g, '') }, st) : ''); },
-    owner: r => col('Owner', null, person(rel(r, 'OwnedByPerson', 'Name')) || '(none)'),
+    // Status: click the pill to change it (the same save as SMAX's case lists), when that setting is on
+    status: r => { const st = STATUS[r.Status] || r.Status || '';
+      if (!st) return col('Status', null, '');
+      const pill = el('span', { class: 'otsmb-pill otsmb-st-' + (r.Status || '').replace(/[^A-Za-z]/g, '') }, st);
+      if (settings.statusEdit) {
+        pill.classList.add('otsmb-status-edit'); pill.tabIndex = 0; pill.title = 'Click to change the status';
+        const open = e => { e.stopPropagation(); toggleFloating(pill, () => statusMenu(r.Id, st, () => load(current.id, true)), true, true); };
+        pill.addEventListener('click', open);
+        pill.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(e); } });
+      }
+      return col('Status', null, pill); },
+    owner: r => { const n = person(rel(r, 'OwnedByPerson', 'Name'));
+      return col('Owner', null, r.OwnedByPerson ? hoverName(n || '(unknown)', n, ownerCard) : '(none)'); },
     contact: r => { const n = person(rel(r, 'RequestedForPerson', 'Name'));
       return col('Contact', 'otsmb-col-contact', r.RequestedForPerson ? hoverName(n || '(unknown)', n, personCard) : '(none)',
         r.RequestedForPerson && iconButton('cases', "Contact's other cases", casesPopup)); },
@@ -144,8 +157,8 @@
         onclick: e => { e.stopPropagation(); toggleFloating(e.currentTarget.previousElementSibling, () => el('div', { class: 'otsmb-devids' },
           el('div', { class: 'otsmb-card-sub' }, 'Product Dev IDs'), ...ids.map(id => el('div', null, quixyLink(id)))), true); } }, `+${ids.length - 1}`) : null;
       return col('Product Dev ID', null, quixyLink(ids[0]), more); },
-    created: r => col('Created', null, shortDate(r.EmsCreationTime)),
-    updated: r => col('Updated', null, shortDate(r.LastUpdateTime)),
+    created: r => col('Created', null, byInfo(shortDate(r.EmsCreationTime), person(rel(r, 'RequestedByPerson', 'Name')), 'Created by ')),
+    updated: r => col('Updated', null, byInfo(shortDate(r.LastUpdateTime), person(rel(r, 'LastUpdatedBy_c', 'Name')), 'Last updated by ')),
   };
 
   function devIds(r) {
@@ -343,6 +356,30 @@
         p.EmployeeStatus && p.EmployeeStatus !== 'Active' ? line('Status', p.EmployeeStatus) : null)));
   }
 
+  // The case owner's card: phone, email, job title, time zone, location and (when available) manager.
+  // Job title and manager come from a second fetch so an uncertain field name can't fail the whole card.
+  const OWNER_BASE = 'Name,Email,OfficePhoneNumber,MobilePhoneNumber,TimeZone,Location.DisplayLabel,EmployeeStatus';
+  const OWNER_EXTRA = 'Title,Manager.Name';   // confirm these property names against OTSM; dropped if it rejects them
+  async function ownerCard() {
+    const id = current.req.OwnedByPerson;
+    if (!current.owner) {
+      try { current.owner = await getOne('Person', id, OWNER_BASE + ',' + OWNER_EXTRA); }
+      catch (e) { current.owner = await getOne('Person', id, OWNER_BASE); }
+    }
+    const p = current.owner;
+    return el('div', null,
+      el('div', { class: 'otsmb-card-title' }, el('a', { href: personUrl(id), title: 'Open the owner in OTSM' }, person(p.Name))),
+      el('table', { class: 'otsmb-card' }, el('tbody', null,
+        line('Job title', p.Title),
+        line('Email', p.Email && el('a', { href: 'mailto:' + p.Email }, p.Email)),
+        line('Office', tel(p.OfficePhoneNumber)),
+        line('Mobile', tel(p.MobilePhoneNumber)),
+        line('Time zone', zone(p.TimeZone)),
+        line('Location', rel(p, 'Location', 'DisplayLabel')),
+        line('Manager', rel(p, 'Manager', 'Name') && person(rel(p, 'Manager', 'Name'))),
+        p.EmployeeStatus && p.EmployeeStatus !== 'Active' ? line('Status', p.EmployeeStatus) : null)));
+  }
+
   async function companyCard() {
     const id = current.req.RequestToCompany;
     if (!current.company) current.company = await getOne('Company', id, 'DisplayLabel,Code,TimeZone,RoutingRegion_c,Headquarters.DisplayLabel,CompanyType');
@@ -499,7 +536,8 @@
   }
 
   // ---------- loading and page watching ----------
-  const CASE_LAYOUT = 'Id,DisplayLabel,Status,Priority,EmsCreationTime,LastUpdateTime,OwnedByPerson.Name,' +
+  const CASE_LAYOUT = 'Id,DisplayLabel,Status,Priority,EmsCreationTime,LastUpdateTime,OwnedByPerson,OwnedByPerson.Name,' +
+    'RequestedByPerson.Name,LastUpdatedBy_c.Name,' +
     'RequestedForPerson,RequestedForPerson.Name,RequestToCompany,RequestToCompany.DisplayLabel,Entitlement,Entitlement.DisplayLabel,' +
     'ProductModel_c.DisplayLabel,ProductDevID_c,OverrideEntitlement_c,FTSHostAccount_c,FTSHostPassword_c,FTSCustAccount_c,FTSCustPassword_c,FTSLogin_c';
 
@@ -570,27 +608,33 @@
     if (!r || r.completion_status !== 'OK') throw new Error((r && r.errorDetails && r.errorDetails.message) || "OTSM didn't save the change");
   }
 
-  function statusMenu(info) {
-    const shown = info.cell.textContent.trim();
+  // Shared by the case lists and the banner: a menu of the editable statuses. onSaved(status) updates the caller's UI.
+  function statusMenu(id, shownLabel, onSaved) {
     const box = el('div', { class: 'otsmb-statusmenu' });
     const pick = async status => {
       box.replaceChildren(el('div', { class: 'otsmb-dim' }, 'Saving…'));
       try {
-        await saveStatus(info.id, status);
+        await saveStatus(id, status);
         closeFloating();
-        info.cell.textContent = STATUS[status];
-        info.cell.classList.add('otsmb-status-saved');
-        // SMAX's list Refresh, so the row (and any sorting or filtering on status) is up to date
-        let g = info.grid, btn = null;
-        while (g && !(btn = [...g.querySelectorAll('button.grid-refresh-btn')].find(b => b.offsetParent))) g = g.parentElement;
-        if (btn) setTimeout(() => btn.click(), 600);
+        onSaved(status);
       } catch (err) {
         box.replaceChildren(el('div', { class: 'otsmb-err' }, `Not changed: ${err.message}`));
       }
     };
-    box.append(...EDIT_STATUSES.map(st => el('button', { type: 'button', class: 'otsmb-statusopt' + (STATUS[st] === shown ? ' otsmb-on' : ''),
-        disabled: STATUS[st] === shown, onclick: () => pick(st) }, STATUS[st])));
+    box.append(...EDIT_STATUSES.map(st => el('button', { type: 'button', class: 'otsmb-statusopt' + (STATUS[st] === shownLabel ? ' otsmb-on' : ''),
+        disabled: STATUS[st] === shownLabel, onclick: () => pick(st) }, STATUS[st])));
     return box;
+  }
+
+  // The case list's onSaved: show the new status in the cell, then press the list's Refresh so sorting/filtering catch up
+  function cellSaved(info) {
+    return status => {
+      info.cell.textContent = STATUS[status];
+      info.cell.classList.add('otsmb-status-saved');
+      let g = info.grid, btn = null;
+      while (g && !(btn = [...g.querySelectorAll('button.grid-refresh-btn')].find(b => b.offsetParent))) g = g.parentElement;
+      if (btn) setTimeout(() => btn.click(), 600);
+    };
   }
 
   document.addEventListener('click', e => {
@@ -598,7 +642,7 @@
     const info = statusCell(e.target);
     if (!info) return;
     e.preventDefault(); e.stopPropagation();
-    toggleFloating(info.cell, () => statusMenu(info), true, true);
+    toggleFloating(info.cell, () => statusMenu(info.id, info.cell.textContent.trim(), cellSaved(info)), true, true);
   }, true);
   document.addEventListener('mouseover', e => {
     if (!settings.statusEdit || !e.target.closest || !e.target.closest('.slick-cell')) return;

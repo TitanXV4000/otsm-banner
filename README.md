@@ -76,7 +76,8 @@ To update, replace the folder with the new one and click the reload arrow on the
 the tick boxes, arrows, drag and colours. `test/shot.js` takes `SETTINGS='<json>'` to try settings on a real case, and
 `WIDTH` for the window width. `test/shot.js` logs in to OTSM with the qmon service account (headless Chrome in the smexporter image), opens a case,
 injects the banner and takes screenshots of each popup. `test/layout.js` lists SMAX's fixed elements. `test/status-edit.js` tests the status change: it re-points one list row at
-test case 11068961 (Trevor's; the only case it may change), picks Pending Internal, then sets it back to Closed. Both need the qmon
+test case 11068961 (Trevor's; the only case it may change), picks Pending Internal, then sets it back to Closed.
+`test/status-edit-banner.js` does the same from the banner's Status pill (it opens case 11068961 directly). These need the qmon
 repo's `test/api-poc/common.js`. The screenshots hold real case data, so they go to the gitignored `qmon/data/`:
 
     cd /root/source/qmon && docker run --rm -e CASE=<case> --env-file data/smexporter.env \

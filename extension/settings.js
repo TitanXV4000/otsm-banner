@@ -9,7 +9,7 @@ var OTSMB = (() => {
     { id: 'title', label: 'Title', on: true },
     { id: 'priority', label: 'Priority', on: true },
     { id: 'status', label: 'Status', on: true },
-    { id: 'owner', label: 'Owner', on: true },
+    { id: 'owner', label: 'Owner', on: true, note: 'owner card' },
     { id: 'contact', label: 'Contact', on: true, note: 'contact card and other cases' },
     { id: 'account', label: 'Account', on: true, note: 'account card and entitlements' },
     { id: 'product', label: 'Product', on: false },
