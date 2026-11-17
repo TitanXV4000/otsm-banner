@@ -58,6 +58,12 @@
   // XSRF check and cookies then work the same as in Chrome)
   const pageFetch = (typeof content !== 'undefined' && content && typeof content.fetch === 'function') ? content.fetch.bind(content) : fetch;
 
+  // chrome.runtime calls throw "Extension context invalidated" after the extension is reloaded or updated while an
+  // old page is still open. chrome.runtime.id goes away then, so extAlive() is false and sendExt() no-ops (returning
+  // false) instead of throwing; the page just needs a refresh. Returns true only when the message was actually sent.
+  const extAlive = () => { try { return !!(typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id); } catch (e) { return false; } };
+  const sendExt = msg => { try { if (extAlive()) { chrome.runtime.sendMessage(msg); return true; } } catch (e) { /* extension reloaded */ } return false; };
+
   // OTSM answers 401 once the session has timed out (or sends a sign-in page instead of JSON)
   const SIGNED_OUT = 'Signed out of OTSM: reload the page (F5) to sign in again';
   const httpError = res => new Error(res.status === 401 ? SIGNED_OUT : `HTTP ${res.status}`);
@@ -172,8 +178,7 @@
   }
   function openQuixy(id) {
     const url = QUIXY + encodeURIComponent(id);
-    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) chrome.runtime.sendMessage({ openQuixy: id });
-    else window.open(url, '_blank', 'noopener');   // the headless tests, which have no extension
+    if (!sendExt({ openQuixy: id })) window.open(url, '_blank', 'noopener');   // no extension (headless tests) or it was reloaded
   }
 
   function applyColors(b) {
@@ -238,8 +243,8 @@
 
   // The Options page can only be opened by the extension's service worker
   function settingsButton() {
-    if (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.sendMessage) return null;
-    return el('button', { class: 'otsmb-icon', type: 'button', title: 'Banner settings', html: ICON.gear, onclick: () => chrome.runtime.sendMessage({ openOptions: true }) });
+    if (!extAlive()) return null;
+    return el('button', { class: 'otsmb-icon', type: 'button', title: 'Banner settings', html: ICON.gear, onclick: () => sendExt({ openOptions: true }) });
   }
 
   // Only shown when loading failed; otherwise SMAX's own Refresh button reloads the banner too (see watchRefresh)
