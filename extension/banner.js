@@ -658,6 +658,9 @@
   }, true);
   // SMAX's Save (the case's toolbar, or a dialog's Save) and Ctrl+S save without reloading the page. Once OTSM has the
   // change (the case's LastUpdateTime moves), reload the banner; give up after about 20 seconds (nothing was changed).
+  // LastUpdateTime bumps as soon as the record is written, but EMS can lag a moment on related fields (OwnedByPerson.Name,
+  // AssignedToGroup.Name, ...), so wait SAVE_SETTLE after the change is seen before reloading, or the banner shows the old owner.
+  const SAVE_SETTLE = 1200;
   let saveWatch = 0;
   async function afterSave() {
     if (!current || !current.req) return;
@@ -665,7 +668,14 @@
     for (const wait of [1000, 1500, 2500, 5000, 10000]) {
       await new Promise(r => setTimeout(r, wait));
       if (mine !== saveWatch || !current || current.id !== id) return;
-      try { if ((await getOne('Request', id, 'LastUpdateTime')).LastUpdateTime !== before) { load(id, true); return; } } catch (e) { /* try again */ }
+      try {
+        if ((await getOne('Request', id, 'LastUpdateTime')).LastUpdateTime !== before) {
+          await new Promise(r => setTimeout(r, SAVE_SETTLE));   // let EMS propagate the related fields
+          if (mine !== saveWatch || !current || current.id !== id) return;
+          load(id, true);
+          return;
+        }
+      } catch (e) { /* try again */ }
     }
   }
   document.addEventListener('click', e => {
