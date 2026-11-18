@@ -126,7 +126,7 @@
 <section id="tab-install" class="tab">
   <h2>Download &amp; install</h2>
   <div class="download">
-    <a class="btn" href="otsm-banner-@VERSION@.zip" download>Chrome or Edge: download @VERSION@</a>
+    <a class="btn" href="https://chromewebstore.google.com/detail/otsm-case-banner/fckpfmohfmcgmebohegojfijahcbkiip">Chrome or Edge: add from the Web Store</a>
     <a class="btn" href="otsm-banner-@VERSION@.xpi">Firefox: add @VERSION@</a>
     <span class="meta">@DATE@ · Windows, Mac or Linux · <a href="https://github.com/TitanXV4000/otsm-banner">Source on GitHub</a></span>
   </div>
@@ -140,17 +140,30 @@
     icon, <b>Check for Updates</b>.</p>
 
   <h3>Chrome or Edge</h3>
-  <p>The extension isn't in the Chrome or Edge store, so you load it from a folder. It takes a minute:</p>
+  <p>Install it from the Chrome Web Store, so new versions update by themselves:</p>
   <ol>
-    <li>Click <b>Chrome or Edge: download</b> above and extract the zip somewhere you'll keep it, such as <code>Documents\otsm-banner</code>.
-      The browser runs the extension from that folder, so don't delete it.</li>
+    <li>Click <b>Chrome or Edge: add from the Web Store</b> above, then <b>Add to Chrome</b> (or <b>Add to Edge</b>) and confirm.
+      <br><span class="meta">Edge may first say the extension is from another store &mdash; click <b>Allow</b>, then add it.</span></li>
+    <li>Open or refresh an OTSM case. The banner appears at the top.</li>
+  </ol>
+  <p>The listing is unlisted, so the button above (or the
+    <a href="https://chromewebstore.google.com/detail/otsm-case-banner/fckpfmohfmcgmebohegojfijahcbkiip">store page</a>)
+    is the only way to reach it &mdash; it won't come up in a Web Store search.</p>
+  <p><b>Already running the folder version?</b> Open <code>chrome://extensions</code> (or <code>edge://extensions</code>), click
+    <b>Remove</b> on the old OTSM case banner, then add it from the store above. Your settings don't carry over to the store
+    copy, so set them again with the banner's gear icon.</p>
+
+  <p><b>Prefer not to use the store?</b> You can still load it from a folder:</p>
+  <ol>
+    <li>Download the zip (<a href="otsm-banner-@VERSION@.zip" download>otsm-banner @VERSION@</a>) and extract it somewhere you'll keep it,
+      such as <code>Documents\otsm-banner</code>. The browser runs the extension from that folder, so don't delete it.</li>
     <li>Open <code>chrome://extensions</code> in Chrome, or <code>edge://extensions</code> in Edge.</li>
     <li>Turn on <b>Developer mode</b> (top right in Chrome, on the left in Edge).</li>
     <li>Click <b>Load unpacked</b> and pick the <code>otsm-banner</code> folder (the one with <code>manifest.json</code> in it).</li>
     <li>Open or refresh an OTSM case. The banner appears at the top.</li>
   </ol>
-  <p>To update: download the new zip and extract it over the old folder, replacing the files. Then click the reload arrow on
-    the OTSM case banner card on the extensions page, and refresh your OTSM tabs.</p>
+  <p>To update the folder version: download the new zip and extract it over the old folder, replacing the files. Then click the
+    reload arrow on the OTSM case banner card on the extensions page, and refresh your OTSM tabs.</p>
 
   <h3>FTS</h3>
   <p>The FTS button needs <a href="https://winscp.net/">WinSCP</a> installed. The first time, the browser asks whether to open WinSCP;
