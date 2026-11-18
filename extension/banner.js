@@ -137,7 +137,7 @@
       const pill = el('span', { class: 'otsmb-pill otsmb-st-' + (r.Status || '').replace(/[^A-Za-z]/g, '') }, st);
       if (settings.statusEdit) {
         pill.classList.add('otsmb-status-edit'); pill.tabIndex = 0; pill.title = 'Click to change the status';
-        const open = e => { e.stopPropagation(); toggleFloating(pill, () => statusMenu(r.Id, st, () => load(current.id, true)), true, true); };
+        const open = e => { e.stopPropagation(); toggleFloating(pill, () => statusMenu(r.Id, st, bannerStatusSaved), true, true); };
         pill.addEventListener('click', open);
         pill.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(e); } });
       }
@@ -661,6 +661,22 @@
     const b = e.target.closest && e.target.closest('button[aria-label="Refresh"]');
     if (b && current && !b.closest('#otsmb, .otsmb-float')) load(current.id, true);
   }, true);
+
+  // OTSM draws its own Status (the top header and the form's Status field) from its in-memory copy of the case, which
+  // doesn't know about the banner's REST write. After a status change from the banner, click OTSM's own Refresh so it
+  // re-fetches and its view matches. Skipped when the case form has unsaved edits (an enabled Save button), which a
+  // Refresh would throw away; the banner is still right, and OTSM catches up on the user's next save or refresh.
+  function otsmUnsaved() {
+    return [...document.querySelectorAll('[data-aid^="tool-bar-btn-save"]')].some(b =>
+      b.offsetParent && !b.disabled && b.getAttribute('aria-disabled') !== 'true' && !b.classList.contains('disabled'));
+  }
+  function syncOtsmStatus() {
+    if (otsmUnsaved()) return;
+    const r = document.querySelector('button[aria-label="Refresh"]');
+    if (r && !r.closest('#otsmb, .otsmb-float')) setTimeout(() => r.click(), 300);   // let the write settle, then re-fetch
+  }
+  // The banner's status onSaved: update the banner's own pill, then sync OTSM's Status view.
+  function bannerStatusSaved() { if (current) load(current.id, true); syncOtsmStatus(); }
   // SMAX's Save (the case's toolbar, or a dialog's Save) and Ctrl+S save without reloading the page. Once OTSM has the
   // change (the case's LastUpdateTime moves), reload the banner; give up after about 20 seconds (nothing was changed).
   // LastUpdateTime bumps as soon as the record is written, but EMS can lag a moment on related fields (OwnedByPerson.Name,
