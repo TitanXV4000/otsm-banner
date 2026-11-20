@@ -664,14 +664,10 @@
 
   // OTSM draws its own Status (the top header and the form's Status field) from its in-memory copy of the case, which
   // doesn't know about the banner's REST write. After a status change from the banner, click OTSM's own Refresh so it
-  // re-fetches and its view matches. Skipped when the case form has unsaved edits (an enabled Save button), which a
-  // Refresh would throw away; the banner is still right, and OTSM catches up on the user's next save or refresh.
-  function otsmUnsaved() {
-    return [...document.querySelectorAll('[data-aid^="tool-bar-btn-save"]')].some(b =>
-      b.offsetParent && !b.disabled && b.getAttribute('aria-disabled') !== 'true' && !b.classList.contains('disabled'));
-  }
+  // re-fetches and its view matches. (SMAX leaves its Save button enabled even on a clean form, so there's no reliable
+  // "unsaved edits" flag to check first — but if the form does have unsaved edits, OTSM's Refresh shows its own "leave
+  // without saving?" prompt, so the user can keep them with Cancel; nothing is lost silently.)
   function syncOtsmStatus() {
-    if (otsmUnsaved()) return;
     const r = document.querySelector('button[aria-label="Refresh"]');
     if (r && !r.closest('#otsmb, .otsmb-float')) setTimeout(() => r.click(), 300);   // let the write settle, then re-fetch
   }
