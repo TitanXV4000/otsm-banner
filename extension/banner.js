@@ -575,14 +575,18 @@
     if (btn && btn.offsetParent) { btn.click(); collapsePending = false; }
   }
 
-  // On a case list (setting), the banner follows the selected row. SMAX marks it .slick-row.active and carries the case
-  // id in the row's class (item-id-<id>); a Request link confirms it's a case row and not some other grid's selection.
+  // On a case list (setting), the banner follows the selected row. A row carries its case id in its class (item-id-<id>);
+  // a Request link confirms it's a case row (not some other grid). Checking the row's checkbox is the usual way to select —
+  // SMAX marks that only with a checked <input type=checkbox>, no row class — so prefer a clicked/active row if there is
+  // one, then fall back to a checkbox-selected row (the first, if several are ticked).
   function selectedListCaseId() {
-    for (const row of document.querySelectorAll('.slick-row.active')) {
-      const id = (row.className.match(/\bitem-id-(\d+)/) || [])[1];
-      if (id && row.querySelector('a[href*="/saw/Request/"]')) return id;
-    }
-    return null;
+    const rows = [...document.querySelectorAll('.slick-row')].filter(row =>
+      /\bitem-id-\d+/.test(row.className) && row.querySelector('a[href*="/saw/Request/"]'));
+    const idOf = row => (row.className.match(/\bitem-id-(\d+)/) || [])[1];
+    const active = rows.find(row => row.classList.contains('active') || row.classList.contains('selected'));
+    if (active) return idOf(active);
+    const checked = rows.find(row => { const cb = row.querySelector('input[type=checkbox]'); return cb && cb.checked; });
+    return checked ? idOf(checked) : null;
   }
 
   function check() {
