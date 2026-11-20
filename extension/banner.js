@@ -97,6 +97,7 @@
   let token = 0;           // drops answers for a case we've already left
   let floating = null;     // the open popup or contact card
   let hoverTimer = null;
+  let listClickId = null;  // on a case list, the case row the user last clicked (see selectedListCaseId)
   let settings = OTSMB.complete();   // replaced by the saved settings before the first case loads
 
   // ---------- banner ----------
@@ -575,18 +576,20 @@
     if (btn && btn.offsetParent) { btn.click(); collapsePending = false; }
   }
 
-  // On a case list (setting), the banner follows the selected row. A row carries its case id in its class (item-id-<id>);
-  // a Request link confirms it's a case row (not some other grid). Checking the row's checkbox is the usual way to select —
-  // SMAX marks that only with a checked <input type=checkbox>, no row class — so prefer a clicked/active row if there is
-  // one, then fall back to a checkbox-selected row (the first, if several are ticked).
+  // On a case list (setting), the banner follows the case row the user last clicked — anywhere in it (title, body or the
+  // checkbox). A click is the reliable signal: SMAX marks a clicked row with a class but a checkbox tick with nothing but
+  // the checked <input>, so keying off the click covers both and follows the last one touched when several are ticked.
+  // The click is recorded by the capture-phase listener below; here we honour it while that row is still on screen (rows
+  // are virtualised), then fall back to a ticked, then a clicked/active row for the first load before any click.
   function selectedListCaseId() {
     const rows = [...document.querySelectorAll('.slick-row')].filter(row =>
       /\bitem-id-\d+/.test(row.className) && row.querySelector('a[href*="/saw/Request/"]'));
     const idOf = row => (row.className.match(/\bitem-id-(\d+)/) || [])[1];
-    const active = rows.find(row => row.classList.contains('active') || row.classList.contains('selected'));
-    if (active) return idOf(active);
+    if (listClickId && rows.some(row => idOf(row) === listClickId)) return listClickId;
     const checked = rows.find(row => { const cb = row.querySelector('input[type=checkbox]'); return cb && cb.checked; });
-    return checked ? idOf(checked) : null;
+    if (checked) return idOf(checked);
+    const active = rows.find(row => row.classList.contains('active') || row.classList.contains('selected'));
+    return active ? idOf(active) : null;
   }
 
   function check() {
@@ -717,6 +720,13 @@
     if (b && !b.closest('#otsmb, .otsmb-float') && (b.dataset.aid || /^\s*save\b/i.test(b.innerText))) afterSave();
   }, true);
   document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key && e.key.toLowerCase() === 's') afterSave(); }, true);
+  // On a case list, follow the case row the user clicks (anywhere in it) so the banner updates at once (see selectedListCaseId)
+  document.addEventListener('click', e => {
+    if (!settings.listBanner || caseIdFromUrl()) return;
+    const row = e.target.closest && e.target.closest('.slick-row');
+    const id = row && (row.className.match(/\bitem-id-(\d+)/) || [])[1];
+    if (id && row.querySelector('a[href*="/saw/Request/"]') && id !== listClickId) { listClickId = id; check(); }
+  }, true);
   OTSMB.onChange(s => { settings = s; if (current && bar) render(); });   // Options page changes show at once
   OTSMB.load().then(s => {
     settings = s;
