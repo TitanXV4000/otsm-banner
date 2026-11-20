@@ -664,12 +664,15 @@
 
   // OTSM draws its own Status (the top header and the form's Status field) from its in-memory copy of the case, which
   // doesn't know about the banner's REST write. After a status change from the banner, click OTSM's own Refresh so it
-  // re-fetches and its view matches. (SMAX leaves its Save button enabled even on a clean form, so there's no reliable
-  // "unsaved edits" flag to check first — but if the form does have unsaved edits, OTSM's Refresh shows its own "leave
-  // without saving?" prompt, so the user can keep them with Cancel; nothing is lost silently.)
+  // re-fetches and its view matches — but only when the case form has no unsaved edits, so OTSM's "leave without saving?"
+  // prompt never fires. SMAX is AngularJS, which marks an edited field and its form .ng-dirty (there are none on a clean
+  // form); the banner uses no AngularJS, so any .ng-dirty on the page means the user has unsaved edits on the case.
   function syncOtsmStatus() {
-    const r = document.querySelector('button[aria-label="Refresh"]');
-    if (r && !r.closest('#otsmb, .otsmb-float')) setTimeout(() => r.click(), 300);   // let the write settle, then re-fetch
+    setTimeout(() => {   // let the REST write settle, then re-fetch through OTSM's own Refresh
+      if (document.querySelector('.ng-dirty')) return;   // unsaved edits in progress: leave OTSM's view alone (the banner is still right)
+      const r = document.querySelector('button[aria-label="Refresh"]');
+      if (r && !r.closest('#otsmb, .otsmb-float')) r.click();
+    }, 300);
   }
   // The banner's status onSaved: update the banner's own pill, then sync OTSM's Status view.
   function bannerStatusSaved() { if (current) load(current.id, true); syncOtsmStatus(); }
