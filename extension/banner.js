@@ -751,15 +751,29 @@
   document.addEventListener('click', e => {
     if (settings.listBanner && !caseIdFromUrl() && e.target.closest && e.target.closest('.slick-row')) setTimeout(check, 0);
   }, true);
-  // Let the user drag-select and copy text in a case list. The cells are plain text, but SMAX's grid grabs the cell
-  // mousedown to start its own drag, which stops the browser ever beginning a text selection (so CSS user-select:text alone
-  // does nothing). Keep that mousedown from reaching the grid for ordinary cells — not the checkbox — without preventing its
-  // default, so native selection runs. Clicks (mouseup) are untouched: opening a case, the checkboxes, status edits and the
-  // banner-follow all still work.
+  // Let the user drag-select and copy text in a case list. SMAX's grid suppresses the native drag-to-select gesture through
+  // something that can't be intercepted (no mouse/pointer event is defaultPrevented, no selectstart/dragstart fires, no
+  // pointer capture) — but selecting a cell's text through the Range/Selection API works and sticks, so the selection itself
+  // is fine; only the gesture never starts. So we do the selection ourselves: a press that begins in a data cell (not the
+  // checkbox) arms a drag, and each move sets the selection from the press point to the pointer. Both ends are resolved from
+  // the live coordinates every move, so it stays correct even if SMAX re-renders the pressed cell. A plain click (no move)
+  // selects nothing, so case-open, the checkboxes, status edits and the banner-follow are all untouched.
+  const caretRange = (x, y) => {
+    if (document.caretRangeFromPoint) return document.caretRangeFromPoint(x, y);                 // Chrome/Edge
+    if (document.caretPositionFromPoint) { const p = document.caretPositionFromPoint(x, y); if (p) { const r = document.createRange(); r.setStart(p.offsetNode, p.offset); return r; } }   // Firefox
+    return null;
+  };
+  let dragSel = null;   // {x, y} of a left-button press that began in a selectable list cell
   document.addEventListener('mousedown', e => {
-    const cell = e.target.closest && e.target.closest('.slick-cell');
-    if (cell && !cell.classList.contains('slick-cell-checkboxsel')) e.stopPropagation();
+    const cell = e.button === 0 && e.target.closest && e.target.closest('.slick-cell');
+    dragSel = (cell && !cell.classList.contains('slick-cell-checkboxsel')) ? { x: e.clientX, y: e.clientY } : null;
   }, true);
+  document.addEventListener('mousemove', e => {
+    if (!dragSel || !(e.buttons & 1)) return;
+    const a = caretRange(dragSel.x, dragSel.y), f = caretRange(e.clientX, e.clientY);
+    if (a && f) { try { getSelection().setBaseAndExtent(a.startContainer, a.startOffset, f.startContainer, f.startOffset); } catch (_) { /* nodes moved under us */ } }
+  }, true);
+  document.addEventListener('mouseup', () => { dragSel = null; }, true);
   OTSMB.onChange(s => { settings = s; if (current && bar) render(); });   // Options page changes show at once
   OTSMB.load().then(s => {
     settings = s;
