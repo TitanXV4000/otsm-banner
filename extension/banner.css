@@ -91,6 +91,9 @@ html.otsmb-on .pl-entity-page-minimized-header { top: calc(56px + var(--otsmb-h)
 .otsmb-tabs button { border: 1px solid #c4cad1; background: #fff; border-radius: 4px; padding: 2px 10px; cursor: pointer; font: inherit; }
 .otsmb-tabs button.otsmb-on { background: #0b5cad; border-color: #0b5cad; color: #fff; }
 
+/* Let the case list's text be selected and copied (SMAX's grids set user-select: none) */
+.slick-cell, .slick-cell * { -webkit-user-select: text !important; user-select: text !important; }
+
 /* Status change from SMAX's case lists */
 .otsmb-status-cell { cursor: pointer; text-decoration: underline dotted #8a929b; text-underline-offset: 3px; }
 .otsmb-status-cell:hover { color: #0b5cad; }
