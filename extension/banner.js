@@ -751,6 +751,15 @@
   document.addEventListener('click', e => {
     if (settings.listBanner && !caseIdFromUrl() && e.target.closest && e.target.closest('.slick-row')) setTimeout(check, 0);
   }, true);
+  // Let the user drag-select and copy text in a case list. The cells are plain text, but SMAX's grid grabs the cell
+  // mousedown to start its own drag, which stops the browser ever beginning a text selection (so CSS user-select:text alone
+  // does nothing). Keep that mousedown from reaching the grid for ordinary cells — not the checkbox — without preventing its
+  // default, so native selection runs. Clicks (mouseup) are untouched: opening a case, the checkboxes, status edits and the
+  // banner-follow all still work.
+  document.addEventListener('mousedown', e => {
+    const cell = e.target.closest && e.target.closest('.slick-cell');
+    if (cell && !cell.classList.contains('slick-cell-checkboxsel')) e.stopPropagation();
+  }, true);
   OTSMB.onChange(s => { settings = s; if (current && bar) render(); });   // Options page changes show at once
   OTSMB.load().then(s => {
     settings = s;
