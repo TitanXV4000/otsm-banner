@@ -594,7 +594,9 @@
     return id;
   }
 
-  // On a case list with no single case selected, show the banner empty rather than hiding it (keeps the layout steady)
+  // On a case list with no single case selected, show the banner empty rather than hiding it: the same columns and labels
+  // as a real case (so it reads as "a case will go here" and the layout stays steady), but with blank values.
+  const FIELD_LABELS = Object.fromEntries(OTSMB.FIELDS.map(f => [f.id, f.label]));
   let blank = false;
   function showBlank() {
     if (blank && bar && document.body.contains(bar)) return;
@@ -602,7 +604,9 @@
     blank = true;
     const b = ensureBar();
     applyColors(b);
-    b.replaceChildren(col('', 'otsmb-grow', el('span', { class: 'otsmb-dim' }, 'Select one case to show its banner')),
+    b.replaceChildren(
+      ...settings.fields.filter(f => f.on && FIELD_RENDER[f.id]).map(f =>
+        col(FIELD_LABELS[f.id] || '', f.id === 'title' ? 'otsmb-grow' : null, ' ')),   // nbsp keeps the value line's height
       el('div', { class: 'otsmb-actions' }, settingsButton()));
     showBar(true);
   }
