@@ -38,6 +38,7 @@ var OTSMB = (() => {
     fts: 'host',               // 'host', 'customer' or 'both'
     statusEdit: true,          // click a status in SMAX's case lists to change it
     collapsePreview: false,    // collapse OTSM's case preview pane each time a case list opens
+    listBanner: false,         // show the banner on a case list, for the row currently selected
     ftsApp: 'winscp',          // the FTS button opens 'winscp' (winscp-ftp://) or 'ftp' (ftp://, the default FTP app)
     names: 'first',            // people's names as 'first' (First Last) or 'last' (Last, First, as OTSM stores them)
   };

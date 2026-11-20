@@ -575,9 +575,19 @@
     if (btn && btn.offsetParent) { btn.click(); collapsePending = false; }
   }
 
+  // On a case list (setting), the banner follows the selected row. SMAX marks it .slick-row.active and carries the case
+  // id in the row's class (item-id-<id>); a Request link confirms it's a case row and not some other grid's selection.
+  function selectedListCaseId() {
+    for (const row of document.querySelectorAll('.slick-row.active')) {
+      const id = (row.className.match(/\bitem-id-(\d+)/) || [])[1];
+      if (id && row.querySelector('a[href*="/saw/Request/"]')) return id;
+    }
+    return null;
+  }
+
   function check() {
-    const id = caseIdFromUrl();
     collapsePreview();
+    const id = caseIdFromUrl() || (settings.listBanner ? selectedListCaseId() : null);
     if (!id) { if (current) { current = null; token++; showBar(false); } return; }
     if (!current || current.id !== id) load(id);
     else if (!bar || !document.body.contains(bar)) render();   // the page replaced <body> contents

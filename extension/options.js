@@ -104,6 +104,7 @@
     radios('ftsApp', [['winscp', 'WinSCP'], ['ftp', 'Default FTP app (ftp:// link)']], () => s.ftsApp, v => { s.ftsApp = v; });
     radios('statusEdit', [[true, 'On'], [false, 'Off']], () => s.statusEdit, v => { s.statusEdit = v; });
     radios('collapsePreview', [[true, 'Collapsed'], [false, 'As OTSM shows it']], () => s.collapsePreview, v => { s.collapsePreview = v; });
+    radios('listBanner', [[true, 'On'], [false, 'Off']], () => s.listBanner, v => { s.listBanner = v; });
     radios('fts', [['host', 'Host account'], ['customer', 'Customer account'], ['both', 'Both (Host and Cust buttons)']], () => s.fts, v => { s.fts = v; });
   }
 
