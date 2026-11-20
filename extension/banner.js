@@ -763,17 +763,27 @@
     if (document.caretPositionFromPoint) { const p = document.caretPositionFromPoint(x, y); if (p) { const r = document.createRange(); r.setStart(p.offsetNode, p.offset); return r; } }   // Firefox
     return null;
   };
-  let dragSel = null;   // {x, y} of a left-button press that began in a selectable list cell
+  const applySel = (ax, ay, fx, fy) => {   // select from one point to another, resolving both ends against the live DOM
+    const a = caretRange(ax, ay), f = caretRange(fx, fy);
+    if (a && f) { try { getSelection().setBaseAndExtent(a.startContainer, a.startOffset, f.startContainer, f.startOffset); } catch (_) { /* nodes moved under us */ } }
+  };
+  let dragSel = null;   // {x, y, fx, fy} of a left-button press that began in a selectable list cell (fx/fy: latest pointer)
   document.addEventListener('mousedown', e => {
-    const cell = e.button === 0 && e.target.closest && e.target.closest('.slick-cell');
-    dragSel = (cell && !cell.classList.contains('slick-cell-checkboxsel')) ? { x: e.clientX, y: e.clientY } : null;
+    const cell = settings.listSelect && e.button === 0 && e.target.closest && e.target.closest('.slick-cell');
+    dragSel = (cell && !cell.classList.contains('slick-cell-checkboxsel')) ? { x: e.clientX, y: e.clientY, fx: null, fy: null } : null;
   }, true);
   document.addEventListener('mousemove', e => {
     if (!dragSel || !(e.buttons & 1)) return;
-    const a = caretRange(dragSel.x, dragSel.y), f = caretRange(e.clientX, e.clientY);
-    if (a && f) { try { getSelection().setBaseAndExtent(a.startContainer, a.startOffset, f.startContainer, f.startOffset); } catch (_) { /* nodes moved under us */ } }
+    dragSel.fx = e.clientX; dragSel.fy = e.clientY;
+    applySel(dragSel.x, dragSel.y, e.clientX, e.clientY);
   }, true);
-  document.addEventListener('mouseup', () => { dragSel = null; }, true);
+  // The first drag on a not-yet-active row can lose the selection: SMAX repaints the row just after mouseup and wipes it.
+  // Re-assert it by coordinates (so it binds to the repainted nodes) on the next frame and shortly after.
+  document.addEventListener('mouseup', () => {
+    const d = dragSel; dragSel = null;
+    if (!d || d.fx === null) return;   // a plain click (no drag) selects nothing
+    requestAnimationFrame(() => { applySel(d.x, d.y, d.fx, d.fy); setTimeout(() => applySel(d.x, d.y, d.fx, d.fy), 80); });
+  }, true);
   OTSMB.onChange(s => { settings = s; if (current && bar) render(); });   // Options page changes show at once
   OTSMB.load().then(s => {
     settings = s;
