@@ -52,6 +52,8 @@ open banners redraw straight away.
 - FTS button: host account (default), customer account, or both (small Host and Cust buttons under an FTS label).
 - FTS opens in: WinSCP (default) or the default FTP app (`ftp://` link).
 - Status in case lists: on (default) or off.
+- Case lists, Show banner: the banner for the one selected case on a list; off (default) or on.
+- Case lists, Select text: drag to select and copy text in a list; on (default) or off.
 - Case preview: collapsed each time a case list opens, or as OTSM shows it (default). It presses the preview pane's own
   Collapse button (`.grid-preview-wrapper.expended [data-aid="sidebar-btn-collapse"]`) once per visit to a list.
 

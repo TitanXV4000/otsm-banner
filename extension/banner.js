@@ -614,6 +614,7 @@
   function check() {
     collapsePreview();
     emailLinks();
+    syncOnGeneral();
     const caseUrl = caseIdFromUrl();
     const onList = !caseUrl && settings.listBanner && hasCaseList();
     const id = caseUrl || (onList ? selectedListCaseId() : null);
@@ -726,8 +727,21 @@
       r.click();
     }, 300);
   }
-  // The banner's status onSaved: update the banner's own pill, then sync OTSM's Status view.
-  function bannerStatusSaved() { if (current) load(current.id, true); syncOtsmStatus(); }
+  // The banner's status onSaved: update the banner's own pill, then sync OTSM's Status view. A Refresh pressed on another
+  // tab (Discussions, History...) doesn't always reach the General form OTSM keeps in memory, so when the change was made
+  // off General, press Refresh once more on coming back to General (check() calls syncOnGeneral).
+  let syncOnReturn = null;   // the case id whose General tab still needs a Refresh
+  const caseTab = () => (location.pathname.match(/^\/saw\/Request\/\d+\/([^/?]+)/) || [])[1] || '';
+  function bannerStatusSaved() {
+    if (current) load(current.id, true);
+    syncOtsmStatus();
+    syncOnReturn = current && caseTab() !== 'general' ? current.id : null;
+  }
+  function syncOnGeneral() {
+    if (!syncOnReturn) return;
+    if (caseIdFromUrl() !== syncOnReturn) { syncOnReturn = null; return; }   // left the case: it reloads anyway
+    if (caseTab() === 'general') { syncOnReturn = null; setTimeout(syncOtsmStatus, 700); }   // let General draw first
+  }
   // SMAX's Save (the case's toolbar, or a dialog's Save) and Ctrl+S save without reloading the page. Once OTSM has the
   // change (the case's LastUpdateTime moves), reload the banner; give up after about 20 seconds (nothing was changed).
   // LastUpdateTime bumps as soon as the record is written, but EMS can lag a moment on related fields (OwnedByPerson.Name,
