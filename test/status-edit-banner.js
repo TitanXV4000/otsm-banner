@@ -6,7 +6,7 @@ const { puppeteer, BASE, TENANT, log, login, sleep, get } = require('/poc/common
 const CASE = '11068961';
 (async () => {
   const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'] });
-  const page = await browser.newPage(); await page.setViewport({ width: 1600, height: 900 });
+  const page = await browser.newPage(); await page.setViewport({ width: +(process.env.WIDTH || 1600), height: 900 });
   page.on('pageerror', e => console.log('pageerror ' + e.message));
   const bulk = []; page.on('request', q => { if (/ems\/bulk/.test(q.url())) bulk.push(q.postData()); });
   try {
@@ -16,6 +16,11 @@ const CASE = '11068961';
     await page.addStyleTag({ path: '/ext/banner.css' });
     await page.evaluate(() => { window.OTSMB_TEST_SETTINGS = { statusEdit: true }; });
     await page.addScriptTag({ path: '/ext/settings.js' }); await page.addScriptTag({ path: '/ext/banner.js' }); await sleep(4000);
+    // OTSM's own Status view (outside the banner) and clicks on its Refresh button, to see that the banner syncs it
+    const otsmShows = () => page.evaluate(() => { const c = document.body.cloneNode(true); c.querySelectorAll('#otsmb, .otsmb-float').forEach(n => n.remove());
+      return ['Pending Internal', 'Closed'].map(l => l + ' x' + (c.innerText.match(new RegExp('\\b' + l + '\\b', 'g')) || []).length).join(', '); });
+    await page.evaluate(() => { window.otsmbRefreshClicks = 0; document.addEventListener('click', e => { if (e.target.closest && e.target.closest('button[aria-label="Refresh"]')) window.otsmbRefreshClicks++; }, true); });
+    console.log('OTSM shows before: ' + await otsmShows());
     const pill = await page.waitForSelector('#otsmb .otsmb-pill.otsmb-status-edit', { timeout: 30000 });
     console.log('banner status: ' + await pill.evaluate(n => n.textContent + ' | title=' + n.title));
     await pill.click(); await sleep(800);
@@ -25,6 +30,8 @@ const CASE = '11068961';
     await sleep(6000);   // save, then the banner reloads itself (load(..., true))
     console.log('menu open after save: ' + !!(await page.$('.otsmb-float')) + (await page.$('.otsmb-err') ? ' ERR ' + await page.$eval('.otsmb-err', n => n.textContent) : ''));
     console.log('banner status now: ' + await page.$eval('#otsmb .otsmb-pill', n => n.textContent).catch(() => 'none'));
+    console.log('OTSM Refresh clicks: ' + await page.evaluate(() => window.otsmbRefreshClicks) + '; OTSM shows after: ' + await otsmShows());
+    await page.screenshot({ path: '/out/stb-after.png' });
     console.log('bulk requests: ' + bulk.length + ' ' + (bulk[0] || '').replace(/"LastUpdateTime":\d+/, '"LastUpdateTime":…'));
     const r = await get(page, `${BASE}/rest/${TENANT}/ems/Request/${CASE}?layout=Id,Status,PhaseId`);
     console.log('case now: ' + JSON.stringify(r.json.entities[0].properties));

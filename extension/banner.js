@@ -711,11 +711,19 @@
   // re-fetches and its view matches — but only when the case form has no unsaved edits, so OTSM's "leave without saving?"
   // prompt never fires. SMAX is AngularJS, which marks an edited field and its form .ng-dirty (there are none on a clean
   // form); the banner uses no AngularJS, so any .ng-dirty on the page means the user has unsaved edits on the case.
+  // The case toolbar also holds hidden copies of Refresh (for its overflow menu), so click the visible one. Each outcome
+  // goes to the console ([otsm-banner]) so a missed sync can be traced in F12.
   function syncOtsmStatus() {
     setTimeout(() => {   // let the REST write settle, then re-fetch through OTSM's own Refresh
-      if (document.querySelector('.ng-dirty')) return;   // unsaved edits in progress: leave OTSM's view alone (the banner is still right)
-      const r = document.querySelector('button[aria-label="Refresh"]');
-      if (r && !r.closest('#otsmb, .otsmb-float')) r.click();
+      const dirty = document.querySelector('.ng-dirty');
+      if (dirty) {   // unsaved edits in progress: leave OTSM's view alone (the banner is still right)
+        console.info('[otsm-banner] status sync skipped: unsaved edits in', dirty.getAttribute('name') || dirty.id || dirty.tagName.toLowerCase(), dirty);
+        return;
+      }
+      const r = [...document.querySelectorAll('button[aria-label="Refresh"]')].find(b => b.offsetParent && !b.closest('#otsmb, .otsmb-float'));
+      if (!r) { console.info('[otsm-banner] status sync skipped: no visible Refresh button'); return; }
+      console.info('[otsm-banner] status sync: clicking OTSM Refresh');
+      r.click();
     }, 300);
   }
   // The banner's status onSaved: update the banner's own pill, then sync OTSM's Status view.
