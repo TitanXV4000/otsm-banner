@@ -49,6 +49,16 @@ html.otsmb-on .grid-page-layout { top: calc(56px + var(--otsmb-h)) !important; }
 
 .otsmb-dim { color: #6b7480; }
 .otsmb-err { color: #b3261e; }
+/* Long customer emails shown in place in Discussions (emailView in banner.js) */
+.otsmb-mailbtn { margin-left: 8px; padding: 1px 9px; border: 1px solid #0b5cad; border-radius: 3px; background: #fff; color: #0b5cad; font: 600 12px/1.5 "Segoe UI", Roboto, Arial, sans-serif; cursor: pointer; }
+.otsmb-mailbtn:hover { background: #e8f1fb; }
+.otsmb-mail { margin: 8px 0 4px; padding: 8px 10px; border: 1px solid #c4cad1; border-radius: 4px; background: #fff; color: #1d2733; font: 13px/1.4 "Segoe UI", Roboto, Arial, sans-serif; }
+.otsmb-mailhead { border-collapse: collapse; margin-bottom: 6px; }
+.otsmb-mailhead th { padding: 1px 12px 1px 0; color: #5a6470; font-weight: 600; text-align: left; vertical-align: top; white-space: nowrap; }
+.otsmb-mailhead td { padding: 1px 0; overflow-wrap: anywhere; }
+.otsmb-mailfiles { margin-bottom: 6px; color: #5a6470; }
+.otsmb-mailframe { display: block; width: 100%; height: 120px; border: 0; border-top: 1px solid #e3e7ec; }
+.otsmb-mailquote { margin: 6px 0 0; }
 .otsmb-pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; background: #e3e7ec; color: #1d2733; }
 .otsmb-st-RequestStatusInProgress { background: #d6e8fb; color: #0b4a8a; }
 .otsmb-st-RequestStatusReady, .otsmb-st-RequestStatusNeedsAttentionc { background: #fde2c4; color: #8a4a00; }

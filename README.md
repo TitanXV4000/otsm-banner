@@ -32,6 +32,12 @@ with a small label over each value.
   others) to pick Ready, In Progress, Pending End User, Needs Attention, Pending Internal or Suspended; it saves at once
   (the same `ems/bulk` UPDATE SMAX's Save sends, with the case's LastUpdateTime, so a case changed since is refused with
   OTSM's message) and refreshes the list. Not Resolved or Closed, which need a solution and completion code.
+- **Long customer emails** in Discussions: when an email is too long for an OTSM comment, the email integration adds a
+  comment with a link to the original instead ("The Email Attachment", an `.eml` file). A **Show email** button next to that
+  link fetches it (only when clicked) and shows it in place: From, To, Cc, Date, Subject, the body with its inline images,
+  and the attachments (saved from the email itself). The body is in a sandboxed frame with its own CSP: no script runs
+  and nothing loads from outside (other images are left out). The older quoted thread (Outlook's From:/Sent: header,
+  Gmail's and others' quote markers) is folded behind **Show quoted text**. Test: `test/email.js` (CASE=a case with one).
 - A ⚙ (settings) button. The banner reloads with SMAX's own Refresh button on the case, after a Save (or Ctrl+S) once OTSM has the change, and when you come back to the tab after a minute or more. When the OTSM session has timed out it says so, with a Reload to sign in button.
 
 ## Settings

@@ -613,6 +613,7 @@
 
   function check() {
     collapsePreview();
+    emailLinks();
     const caseUrl = caseIdFromUrl();
     const onList = !caseUrl && settings.listBanner && hasCaseList();
     const id = caseUrl || (onList ? selectedListCaseId() : null);
@@ -784,6 +785,217 @@
     if (!d || d.fx === null) return;   // a plain click (no drag) selects nothing
     requestAnimationFrame(() => { applySel(d.x, d.y, d.fx, d.fy); setTimeout(() => applySel(d.x, d.y, d.fx, d.fy), 80); });
   }, true);
+  // ---------- long customer emails in Discussions ----------
+  // When a customer's email is too long for an OTSM comment, the email integration adds an Internal comment instead, with
+  // a link to the original email as an .eml file ("The Email Attachment", /rest/<tenant>/frs/file-list/<id>). A "Show
+  // email" button next to that link fetches it (only when clicked) and shows it in place: the headers, the body and the
+  // attachments. The body is HTML in a sandboxed frame that runs no script and loads nothing from outside (its own CSP;
+  // inline images come from the email itself), and the older quoted thread is folded behind "Show quoted text".
+  const MAIL_LINK = '.commentTextBody a[href*="/frs/file-list/"]';
+  function emailLinks() {
+    document.querySelectorAll(MAIL_LINK).forEach(a => {
+      if (a.dataset.otsmbMail || a.textContent.trim() !== 'The Email Attachment') return;
+      a.dataset.otsmbMail = '1';
+      (a.closest('b') || a).after(el('button', { type: 'button', class: 'otsmb-mailbtn',
+        onclick: e => { e.preventDefault(); e.stopPropagation(); toggleEmail(a, e.currentTarget); } }, 'Show email'));
+    });
+  }
+
+  async function toggleEmail(a, btn) {
+    let box = btn.otsmbBox;
+    if (box && box.isConnected) {
+      box.hidden = !box.hidden;
+      btn.textContent = box.hidden ? 'Show email' : 'Hide email';
+      if (!box.hidden) { const f = box.querySelector('iframe'); if (f) fitFrame(f); }
+      return;
+    }
+    box = btn.otsmbBox = el('div', { class: 'otsmb-mail', onclick: e => e.stopPropagation() }, el('div', { class: 'otsmb-dim' }, 'Loading the email…'));
+    (a.closest('.commentTextBody') || a.parentElement).after(box);
+    btn.textContent = 'Hide email';
+    try {
+      const res = await pageFetch(a.href, { credentials: 'include' });
+      if (!res.ok) throw httpError(res);
+      if (res.redirected && /html/i.test(res.headers.get('content-type') || '')) throw new Error(SIGNED_OUT);
+      box.replaceChildren(...emailView(parseMime(bytesToBin(new Uint8Array(await res.arrayBuffer())))));
+    } catch (err) {
+      box.replaceChildren(el('div', { class: 'otsmb-err' }, err.message === SIGNED_OUT ? SIGNED_OUT : `Couldn't load the email: ${err.message}`));
+    }
+  }
+
+  // MIME works on "binary strings" (one character per byte) until a text part is decoded with its charset
+  const bytesToBin = u => { let s = ''; for (let i = 0; i < u.length; i += 8192) s += String.fromCharCode.apply(null, u.subarray(i, i + 8192)); return s; };
+  const binToBytes = s => { const u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i) & 255; return u; };
+  const unHex = (s, re) => s.replace(re, (m, h) => String.fromCharCode(parseInt(h, 16)));
+  function decodeText(bin, charset) {
+    try { return new TextDecoder(charset || 'utf-8').decode(binToBytes(bin)); } catch (e) { return new TextDecoder('utf-8').decode(binToBytes(bin)); }
+  }
+  // =?charset?B?...?= and =?charset?Q?...?= in headers (raw 8-bit header text is taken as UTF-8)
+  const header = (p, name) => decodeText(p.headers[name] || '', 'utf-8').replace(/(\?=)\s+(?==\?)/g, '$1')
+    .replace(/=\?([^?*]+)(?:\*[^?]*)?\?([BbQq])\?([^?]*)\?=/g, (m, cs, enc, t) => {
+      try { return decodeText(/b/i.test(enc) ? atob(t) : unHex(t.replace(/_/g, ' '), /=([0-9A-Fa-f]{2})/g), cs); } catch (e) { return m; }
+    });
+  // 'text/html; charset="utf-8"' -> ['text/html', { charset: 'utf-8' }]; RFC 2231 name*=utf-8''... and name*0=, name*1= too
+  function headerParams(v) {
+    const params = {}, re = /;\s*([^=\s;]+)\s*=\s*("(?:[^"\\]|\\.)*"|[^;]*)/g;
+    let m;
+    while ((m = re.exec(v))) {
+      const k = /^([^*]+)(\*\d+)?(\*)?$/.exec(m[1].toLowerCase());
+      if (!k) continue;
+      let val = m[2].trim();
+      if (val[0] === '"') val = val.slice(1, -1).replace(/\\(.)/g, '$1');
+      if (k[3]) { const x = /^([^']*)'[^']*'(.*)$/.exec(val); val = decodeText(unHex(x ? x[2] : val, /%([0-9A-Fa-f]{2})/g), x && x[1]); }
+      params[k[1]] = (k[2] && params[k[1]] ? params[k[1]] : '') + val;
+    }
+    return [v.split(';')[0].trim().toLowerCase(), params];
+  }
+  // A message or part -> { headers (lower-case names), type, params, parts (multipart) or data (still encoded) }
+  function parseMime(raw) {
+    const sep = /\r?\n\r?\n/.exec(raw);
+    const head = sep ? raw.slice(0, sep.index) : raw, rest = sep ? raw.slice(sep.index + sep[0].length) : '';
+    const headers = {};
+    for (const line of head.replace(/\r?\n[ \t]+/g, ' ').split(/\r?\n/)) {
+      const h = /^([^:\s]+):\s*(.*)$/.exec(line);
+      if (h && !(h[1].toLowerCase() in headers)) headers[h[1].toLowerCase()] = h[2];
+    }
+    const [type, params] = headerParams(headers['content-type'] || 'text/plain');
+    const p = { headers, type, params };
+    if (type.startsWith('multipart/') && params.boundary) {
+      p.parts = [];
+      for (const c of ('\r\n' + rest).split('\n--' + params.boundary).slice(1)) {   // [0] is the preamble
+        if (c.startsWith('--')) break;                                              // the closing boundary
+        p.parts.push(parseMime(c.replace(/^[ \t]*\r?\n/, '').replace(/\r$/, '')));
+      }
+    } else p.data = rest;
+    return p;
+  }
+  function partBin(p) {
+    const enc = (p.headers['content-transfer-encoding'] || '').trim().toLowerCase();
+    if (enc === 'base64') {
+      let b = p.data.replace(/[^A-Za-z0-9+/]/g, '');
+      if (b.length % 4 === 1) b = b.slice(0, -1);                 // a stray last character can't decode
+      try { return atob(b + '==='.slice((b.length + 3) % 4)); } catch (e) { return ''; }
+    }
+    if (enc === 'quoted-printable') return unHex(p.data.replace(/=\r?\n/g, ''), /=([0-9A-Fa-f]{2})/g);
+    return p.data;
+  }
+  const partText = p => decodeText(partBin(p), p.params.charset);
+  // The body to show (the first HTML part, else the first plain-text one), inline images by Content-ID, and the attachments
+  function mailParts(p, out = { html: null, text: null, cid: {}, files: [] }) {
+    if (p.parts) { p.parts.forEach(c => mailParts(c, out)); return out; }
+    const [disp, dparams] = headerParams(p.headers['content-disposition'] || 'inline');
+    const name = dparams.filename || p.params.name || '';
+    const body = disp !== 'attachment' && !name;
+    if (body && p.type === 'text/html' && !out.html) out.html = p;
+    else if (body && p.type === 'text/plain' && !out.text) out.text = p;
+    else {
+      const cid = (p.headers['content-id'] || '').trim().replace(/^<|>$/g, '').toLowerCase();
+      if (cid && p.type.startsWith('image/')) out.cid[cid] = p;
+      const shown = name ? header({ headers: { n: name } }, 'n') : '';
+      out.files.push({ p, name: shown || (p.type === 'message/rfc822' ? 'attached message.eml' : 'attachment') });
+    }
+    return out;
+  }
+
+  // Where the older quoted thread starts: the reply/forward header that Outlook, Gmail, Thunderbird and others write
+  const QUOTE_MARK = '#divRplyFwdMsg, #appendonsend, .gmail_quote, blockquote[type="cite"], #mail-editor-reference-message-container, .moz-cite-prefix, .yahoo_quoted';
+  const FROM_LINE = /^\s*(From|Von|De|Da|Van|Från|Fra|Od|От|发件人)\s*:/;
+  const SENT_LINE = /(Sent|Date|Gesendet|Envoyé|Enviado|Inviato|Verzonden|Datum|Skickat|Sendt|Wysłano|Отправлено|发送时间)\s*:/;
+  function quoteStart(doc) {
+    let at = doc.querySelector(QUOTE_MARK);
+    for (const n of doc.body.querySelectorAll('p, div, hr')) {
+      if (at && (at === n || at.compareDocumentPosition(n) & Node.DOCUMENT_POSITION_FOLLOWING)) break;
+      const t = n.textContent;
+      if (t.length < 2000 && FROM_LINE.test(t) && SENT_LINE.test(t.slice(0, 600))) { at = n; break; }
+    }
+    while (at && at.parentElement && at.parentElement !== doc.body && at.parentElement.textContent.trim() === at.textContent.trim()) at = at.parentElement;
+    const prev = at && at.previousElementSibling;
+    if (prev && prev.tagName === 'HR') at = prev;   // Outlook's line above the header
+    return at;
+  }
+  // Moves everything from the quoted thread's start to the end into a hidden #otsmb-quoted (not when nothing would be left)
+  function foldQuoted(doc, at) {
+    if (!at) return false;
+    const before = doc.createRange(); before.setStart(doc.body, 0); before.setEndBefore(at);
+    if (!before.toString().trim() && !before.cloneContents().querySelector('img')) return false;
+    const r = doc.createRange(); r.setStartBefore(at); r.setEnd(doc.body, doc.body.childNodes.length);
+    const fold = doc.createElement('div'); fold.id = 'otsmb-quoted'; fold.hidden = true;
+    fold.append(r.extractContents());
+    doc.body.append(fold);
+    return true;
+  }
+
+  const MAIL_CSP = "default-src 'none'; img-src data:; style-src 'unsafe-inline'; font-src data:";
+  const MAIL_STYLE = 'body{margin:8px;font:13px/1.4 "Segoe UI",Roboto,Arial,sans-serif;color:#1d2733;background:#fff;overflow-wrap:anywhere}' +
+    'img{max-width:100%;height:auto}pre.otsmb-text{white-space:pre-wrap;font:inherit;margin:0}#otsmb-quoted[hidden]{display:none!important}';
+  // The frame's document: the email's HTML made inert (no scripts, frames, forms or outside loads), or its plain text
+  function mailDoc(m) {
+    const used = new Set();
+    let doc;
+    if (m.html) {
+      doc = new DOMParser().parseFromString(partText(m.html), 'text/html');   // inert: nothing runs or loads
+      doc.querySelectorAll('script, noscript, iframe, frame, frameset, object, embed, applet, form, link, base, meta, audio, video, source, track').forEach(n => n.remove());
+      for (const n of doc.querySelectorAll('*')) {
+        for (const at of [...n.attributes]) {
+          if (/^on/i.test(at.name) || /^\s*(javascript|vbscript|data:text)/i.test(at.value) && /(href|src|action)$/i.test(at.name)) n.removeAttribute(at.name);
+        }
+        if (n.tagName === 'IMG') {
+          const cid = /^\s*cid:(.+)$/i.exec(n.getAttribute('src') || '');
+          const p = cid && m.cid[decodeURIComponent(cid[1]).trim().toLowerCase()];
+          n.removeAttribute('srcset');
+          if (p) { n.setAttribute('src', `data:${p.type};base64,${btoa(partBin(p))}`); used.add(p); }
+          else if (!/^\s*data:image\//i.test(n.getAttribute('src') || '')) n.removeAttribute('src');   // outside images aren't loaded
+        }
+        if (n.tagName === 'A' && n.hasAttribute('href')) { n.setAttribute('target', '_blank'); n.setAttribute('rel', 'noopener noreferrer'); }
+      }
+    } else {
+      doc = document.implementation.createHTMLDocument('');
+      const text = m.text ? partText(m.text) : '';
+      const q = /^(-{3,} ?Original Message ?-{3,}|_{10,}|On .{10,200} wrote:|>)/m.exec(text) || /^(From|Von|De|Da|Van):.*\r?\n(?:.*\r?\n){0,3}?(Sent|Date|Gesendet|Envoyé|Enviado|Inviato|Verzonden|Datum):/m.exec(text);
+      const pre = s => { const n = doc.createElement('pre'); n.className = 'otsmb-text'; n.textContent = s; return n; };
+      doc.body.append(pre(q ? text.slice(0, q.index) : text));
+      if (q) doc.body.append(pre(text.slice(q.index)));
+    }
+    const quoted = foldQuoted(doc, m.html ? quoteStart(doc) : doc.body.children[1]);
+    const head = [...doc.head.querySelectorAll('style')].map(s => s.outerHTML).join('');
+    const srcdoc = `<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${MAIL_CSP}">` +
+      `<style>${MAIL_STYLE}</style>${head}</head><body>${doc.body.innerHTML}</body></html>`;
+    return { srcdoc, used, quoted };
+  }
+
+  // The frame is as tall as the email (allow-same-origin lets this page measure it; it still can't run script)
+  function fitFrame(f) {
+    const d = f.contentDocument;
+    if (d && d.documentElement) f.style.height = Math.max(40, d.documentElement.scrollHeight) + 'px';
+  }
+
+  function emailView(msg) {
+    const m = mailParts(msg);
+    const { srcdoc, used, quoted } = mailDoc(m);
+    const h = name => header(msg, name);
+    const date = Date.parse(h('date'));
+    const line = (label, v) => v ? el('tr', null, el('th', null, label), el('td', null, v)) : null;
+    const files = m.files.filter(f => !used.has(f.p));
+    // Attachments save from the email itself (a blob made on click), not from OTSM
+    const save = f => el('a', { href: '#', download: f.name, onclick: e => {
+      if (e.currentTarget.getAttribute('href') === '#') e.currentTarget.href = URL.createObjectURL(new Blob([binToBytes(partBin(f.p))], { type: f.p.type }));
+    } }, f.name);
+    const frame = el('iframe', { class: 'otsmb-mailframe', title: 'Email', sandbox: 'allow-same-origin allow-popups allow-popups-to-escape-sandbox', srcdoc });
+    frame.addEventListener('load', () => { fitFrame(frame); [300, 1500].forEach(t => setTimeout(() => fitFrame(frame), t)); });
+    return [
+      el('table', { class: 'otsmb-mailhead' }, el('tbody', null, line('From', h('from')), line('To', h('to')), line('Cc', h('cc')),
+        line('Date', isNaN(date) ? h('date') : dateTime(date)), line('Subject', h('subject')))),
+      files.length ? el('div', { class: 'otsmb-mailfiles' }, 'Attachments: ', files.map((f, i) => [i ? ', ' : '', save(f)])) : null,
+      frame,
+      quoted ? el('button', { type: 'button', class: 'otsmb-mailbtn otsmb-mailquote', onclick: e => {
+        const fold = frame.contentDocument && frame.contentDocument.getElementById('otsmb-quoted');
+        if (!fold) return;
+        fold.hidden = !fold.hidden;
+        e.currentTarget.textContent = fold.hidden ? 'Show quoted text' : 'Hide quoted text';
+        fitFrame(frame);
+      } }, 'Show quoted text') : null,
+    ].filter(Boolean);
+  }
+
   OTSMB.onChange(s => { settings = s; if (current && bar) render(); });   // Options page changes show at once
   OTSMB.load().then(s => {
     settings = s;
