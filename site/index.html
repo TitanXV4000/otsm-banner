@@ -74,6 +74,8 @@
   <h2>What it shows</h2>
   <ul>
     <li><b>Change a case's status</b> straight from your OTSM case lists, without opening the case.</li>
+    <li><b>Long customer emails</b> in Discussions: when an email was too long for an OTSM comment, <b>Show email</b> opens it right there, with its pictures and the older replies folded away.</li>
+    <li>Optionally, the banner on your <b>case lists</b> too, for the case you select.</li>
     <li><b>Case</b> number (click to copy), <b>Title</b> (shortened; hover for all of it; click to copy the number and title, like <code>11672418 - [ESM] ESM tuning…</code>), <b>Priority</b> and <b>Status</b> badges, <b>Owner</b>, <b>Contact</b>, <b>Account</b>, <b>Created</b> and <b>Updated</b>.</li>
     <li><b>Product Dev ID</b> when the case has one, linked to its Quixy page. With several, the banner shows the CR and a <b>+1</b> (or more) that lists them all. <b>Product</b> and <b>Entitlement</b> can be turned on in the settings.</li>
     <li><b>FTS</b> opens the case's FTS account in WinSCP (or your default FTP app), logged in with the case's credentials.
@@ -177,6 +179,16 @@
 <section id="tab-changelog" class="tab">
   <h2>Changelog</h2>
   <dl class="changes">
+    <dt>1.8.0 <span>@DATE@</span></dt>
+    <dd><ul>
+      <li>Long customer emails: when an email was too long for an OTSM comment, OTSM adds "The Email Attachment" instead. A <b>Show email</b> button next to it now opens the email right there in Discussions: who it's from and to, the date and subject, the message with its pictures, and any attachments. Older replies are folded behind <b>Show quoted text</b>.</li>
+      <li>The banner on case lists (Settings, Case lists, <b>Show banner</b>; off by default): it shows the case you select, and goes blank when no case or several are selected.</li>
+      <li>Select and copy text in OTSM's case lists by dragging across it, which OTSM normally blocks (Settings, Case lists, <b>Select text</b>; on by default).</li>
+      <li>After you change the status from the banner, OTSM's own Status updates to match, also when you made the change on another tab such as Discussions. It's skipped when you have unsaved edits on the case.</li>
+      <li>New setting <b>Change status in banner</b>, separate from changing the status in case lists. If you had turned Change status off, both stay off.</li>
+      <li>After a save, the banner waits a moment for OTSM to catch up, so it no longer shows the old owner.</li>
+      <li>No more "Extension context invalidated" errors on pages left open while the extension updates.</li>
+    </ul></dd>
     <dt>1.7.9 <span>November 11, 2026</span></dt>
     <dd><ul>
       <li>Change a case's status from the banner: click the Status and pick a new one, the same as from OTSM's case lists (on by default; the same "Change status" setting turns both off).</li>
