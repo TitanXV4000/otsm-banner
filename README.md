@@ -51,6 +51,7 @@ open banners redraw straight away.
 - Names: First Last (default) or Last, First (as OTSM stores them).
 - FTS button: host account (default), customer account, or both (small Host and Cust buttons under an FTS label).
 - FTS opens in: WinSCP (default) or the default FTP app (`ftp://` link).
+- Change status in banner: on (default) or off.
 - Status in case lists: on (default) or off.
 - Case lists, Show banner: the banner for the one selected case on a list; off (default) or on.
 - Case lists, Select text: drag to select and copy text in a list; on (default) or off.

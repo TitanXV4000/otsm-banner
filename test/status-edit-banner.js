@@ -19,7 +19,7 @@ const CASE = '11068961';
       await sleep(5000);
     }
     await page.addStyleTag({ path: '/ext/banner.css' });
-    await page.evaluate(() => { window.OTSMB_TEST_SETTINGS = { statusEdit: true }; });
+    await page.evaluate(() => { window.OTSMB_TEST_SETTINGS = { bannerStatusEdit: true }; });
     await page.addScriptTag({ path: '/ext/settings.js' }); await page.addScriptTag({ path: '/ext/banner.js' }); await sleep(4000);
     // OTSM's own Status view (outside the banner) and clicks on its Refresh button, to see that the banner syncs it
     const otsmShows = () => page.evaluate(() => { const c = document.body.cloneNode(true); c.querySelectorAll('#otsmb, .otsmb-float').forEach(n => n.remove());

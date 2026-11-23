@@ -102,6 +102,7 @@
     radios('casesTab', [['contact', 'Contact'], ['account', 'Account']], () => s.casesTab, v => { s.casesTab = v; });
     radios('names', [['first', 'First Last'], ['last', 'Last, First']], () => s.names, v => { s.names = v; });
     radios('ftsApp', [['winscp', 'WinSCP'], ['ftp', 'Default FTP app (ftp:// link)']], () => s.ftsApp, v => { s.ftsApp = v; });
+    radios('bannerStatusEdit', [[true, 'On'], [false, 'Off']], () => s.bannerStatusEdit, v => { s.bannerStatusEdit = v; });
     radios('statusEdit', [[true, 'On'], [false, 'Off']], () => s.statusEdit, v => { s.statusEdit = v; });
     radios('collapsePreview', [[true, 'Collapsed'], [false, 'As OTSM shows it']], () => s.collapsePreview, v => { s.collapsePreview = v; });
     radios('listBanner', [[true, 'On'], [false, 'Off']], () => s.listBanner, v => { s.listBanner = v; });

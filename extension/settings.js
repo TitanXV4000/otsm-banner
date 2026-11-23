@@ -37,6 +37,7 @@ var OTSMB = (() => {
     casesTab: 'contact',       // the cases popup opens on 'contact' or 'account'
     fts: 'host',               // 'host', 'customer' or 'both'
     statusEdit: true,          // click a status in SMAX's case lists to change it
+    bannerStatusEdit: true,    // click the Status on the banner to change it
     collapsePreview: false,    // collapse OTSM's case preview pane each time a case list opens
     listBanner: false,         // show the banner on a case list, for the row currently selected
     listSelect: true,          // let the user drag to select and copy text in a case list (SMAX blocks this natively)
@@ -47,6 +48,8 @@ var OTSMB = (() => {
   // Saved settings over the defaults. Fields: saved order first, then any field added since (in its default place).
   function complete(saved) {
     const s = Object.assign({}, DEFAULTS, saved || {});
+    // statusEdit covered the banner too until 1.7.9.19: someone who had turned it off keeps the banner's off as well
+    if (saved && saved.bannerStatusEdit === undefined && saved.statusEdit === false) s.bannerStatusEdit = false;
     const known = new Set(FIELDS.map(f => f.id));
     const list = (Array.isArray(s.fields) ? s.fields : []).filter(f => f && known.has(f.id));
     const have = new Set(list.map(f => f.id));
