@@ -94,6 +94,10 @@ repo's `test/api-poc/common.js`. The screenshots hold real case data, so they go
       -v /root/source/otsm-banner/test:/t:ro -v $PWD/data/otsm-banner-shots:/out \
       tsanford/smexporter node /t/shot.js
 
+## Test builds for Trevor
+Run `./share.sh` after each test build (and release): it copies `extension/` to `/mnt/qmon-share/otsm-banner`, his
+OneDrive folder, which he loads unpacked; he then only clicks Reload on the extensions page.
+
 ## Web page
 https://trevman.com/otsm-banner/ (HostMonster). Source in `site/`: `test/demo.js` makes the screenshots
 from the real banner code with made-up API answers (no real case data), then `site/build.sh` builds `dist/` (the page with
