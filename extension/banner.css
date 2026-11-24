@@ -11,9 +11,10 @@ html.otsmb-on { --otsmb-h: 46px; }
 html.otsmb-on body { padding-top: var(--otsmb-h) !important; }
 html.otsmb-on .navbar-fixed-top { top: var(--otsmb-h) !important; }
 html.otsmb-on .pl-entity-page-minimized-header { top: calc(56px + var(--otsmb-h)) !important; }
-/* A case list's whole UI (view tabs, filters, toolbar, grid) is absolutely positioned at top:56px to clear the navy nav;
-   move it below the banner too, or the banner-shifted nav covers its top row (the MY CASES / CLOSED / ID view tabs) */
-html.otsmb-on .grid-page-layout { top: calc(56px + var(--otsmb-h)) !important; }
+/* A case list's whole UI (view tabs, filters, toolbar, grid) is absolutely positioned below the navy nav; move it below
+   the banner too, or the banner-shifted nav covers its top row (the MY CASES / CLOSED / ID view tabs). SMAX sets its top
+   inline (56px, 138px while the header search is open), so add the banner as a margin instead of overriding top */
+html.otsmb-on .grid-page-layout { margin-top: var(--otsmb-h) !important; }
 
 /* When the window is narrow the title gives up room, then title and account together, then the contact (fit() in banner.js) */
 #otsmb .otsmb-col { display: flex; flex-direction: column; justify-content: center; min-width: 0; flex: none; }
