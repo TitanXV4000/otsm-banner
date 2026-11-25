@@ -20,6 +20,8 @@
     cases: '<svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M10 4h4a2 2 0 0 1 2 2v1h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3V6a2 2 0 0 1 2-2zm0 3h4V6h-4v1zM5 9v9h14V9H5z"/></svg>',
     ents: '<svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5l8-3zm0 2.1L6 6.4V11c0 3.9 2.5 7.4 6 8.9 3.5-1.5 6-5 6-8.9V6.4l-6-2.3zm-1 10.5l5-5 1.4 1.4-6.4 6.4-3.4-3.4L9 10.6l2 2z"/></svg>',
     gear: '<svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3h-4l-.4 2.7a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1L11 21h4l.4-2.7a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5-2.2-1.8zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>',
+    copy: '<svg viewBox="0 0 24 24" width="13" height="13"><path fill="currentColor" d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg>',
+    check: '<svg viewBox="0 0 24 24" width="13" height="13"><path fill="currentColor" d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>',
     pencil: '<svg viewBox="0 0 24 24" width="13" height="13"><path fill="currentColor" d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zm17.7-10.2a1 1 0 0 0 0-1.42l-2.33-2.33a1 1 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>',
     refresh: '<svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M17.6 6.4A8 8 0 1 0 20 12h-2a6 6 0 1 1-1.8-4.2L13 11h7V4l-2.4 2.4z"/></svg>',
   };
@@ -129,7 +131,12 @@
   // Each field's column; null leaves it out (Product Dev ID when the case has none)
   const FIELD_RENDER = {
     case: r => col('Case', null, el('span', { class: 'otsmb-id', title: 'Click to copy the case number', onclick: e => copy(e.currentTarget, r.Id) }, r.Id)),
-    title: r => { const t = r.DisplayLabel || ''; return col('Title', 'otsmb-grow', el('span', { class: 'otsmb-title otsmb-copyable', title: t + '\n\nClick to copy the case number and title', onclick: e => copy(e.currentTarget, `${r.Id} - ${t}`) }, cut(t, settings.titleMax))); },
+    title: r => {
+      const t = r.DisplayLabel || '', email = settings.titleCopy === 'email';
+      return col('Title', 'otsmb-grow', el('span', { class: 'otsmb-title otsmb-copyable',
+        title: t + (email ? '\n\nClick to copy for an email subject: ##Request: number## title' : '\n\nClick to copy the case number and title'),
+        onclick: e => copy(e.currentTarget, email ? `##Request: ${r.Id}## ${t}` : `${r.Id} - ${t}`) }, cut(t, settings.titleMax)));
+    },
     priority: r => { const p = PRIORITY[r.Priority] || r.Priority || ''; return col('Priority', null, p ? el('span', { class: 'otsmb-pill otsmb-pr-' + p.toLowerCase() }, p) : ''); },
     // Status: click the pill to change it (the same save as SMAX's case lists), when the Change status in banner setting is on
     status: r => { const st = STATUS[r.Status] || r.Status || '';
@@ -341,8 +348,17 @@
     const digits = String(n).replace(/[^0-9+]/g, '');
     return el('span', { class: 'otsmb-tel' },
       el('a', { href: 'ciscotel:' + digits, 'skip-domain-check': '', title: 'Call with Jabber' }, n),
-      el('a', { class: 'otsmb-teledit', href: 'clicktocallwithedit://' + digits, 'skip-domain-check': '', title: 'Edit the number in Jabber before calling', 'aria-label': `Edit ${n} in Jabber before calling`, html: ICON.pencil }));
+      el('a', { class: 'otsmb-teledit', href: 'clicktocallwithedit://' + digits, 'skip-domain-check': '', title: 'Edit the number in Jabber before calling', 'aria-label': `Edit ${n} in Jabber before calling`, html: ICON.pencil }),
+      copyButton(n, 'number'));
   };
+  const mail = a => a ? el('span', { class: 'otsmb-tel' }, el('a', { href: 'mailto:' + a }, a), copyButton(a, 'email address')) : null;
+  // A small copy button after a phone number or email address; it shows a tick for a moment once copied
+  function copyButton(text, what) {
+    const b = el('button', { class: 'otsmb-copybtn', type: 'button', title: `Copy the ${what}`, 'aria-label': `Copy ${text}`, html: ICON.copy,
+      onclick: e => { e.preventDefault(); e.stopPropagation();
+        navigator.clipboard.writeText(String(text)).then(() => { b.innerHTML = ICON.check; b.classList.add('otsmb-done'); setTimeout(() => { b.innerHTML = ICON.copy; b.classList.remove('otsmb-done'); }, 1200); }); } });
+    return b;
+  }
   const zone = tz => tz ? [tz, el('span', { class: 'otsmb-dim' }, ` (now ${localTime(tz)})`)] : null;
 
   async function personCard() {
@@ -352,7 +368,7 @@
     return el('div', null,
       el('div', { class: 'otsmb-card-title' }, el('a', { href: personUrl(id), title: 'Open the contact in OTSM' }, person(p.Name)), p.IsVIP ? el('span', { class: 'otsmb-pill otsmb-vip' }, 'VIP') : null),
       el('table', { class: 'otsmb-card' }, el('tbody', null,
-        line('Email', p.Email && el('a', { href: 'mailto:' + p.Email }, p.Email)),
+        line('Email', mail(p.Email)),
         line('Office', tel(p.OfficePhoneNumber)),
         line('Mobile', tel(p.MobilePhoneNumber)),
         line('Home', tel(p.HomePhoneNumber)),
@@ -376,7 +392,7 @@
       el('div', { class: 'otsmb-card-title' }, el('a', { href: personUrl(id), title: 'Open the owner in OTSM' }, person(p.Name))),
       el('table', { class: 'otsmb-card' }, el('tbody', null,
         line('Job title', p.Title),
-        line('Email', p.Email && el('a', { href: 'mailto:' + p.Email }, p.Email)),
+        line('Email', mail(p.Email)),
         line('Office', tel(p.OfficePhoneNumber)),
         line('Mobile', tel(p.MobilePhoneNumber)),
         line('Time zone', zone(p.TimeZone)),
@@ -403,7 +419,7 @@
         el('div', { class: 'otsmb-card-sub' }, 'Support team', el('span', { class: 'otsmb-dim' }, ' · ' + team.from)),
         el('table', { class: 'otsmb-card' }, el('tbody', null, team.rows.map(t => el('tr', null, el('th', null, t.role),
           el('td', null, t.id ? el('a', { href: personUrl(t.id), title: 'Open in OTSM' }, person(t.name)) : t.name,
-            t.email ? [' · ', el('a', { href: 'mailto:' + t.email }, t.email)] : null, t.phone ? [' · ', tel(t.phone)] : null,
+            t.email ? [' · ', mail(t.email)] : null, t.phone ? [' · ', tel(t.phone)] : null,
             t.plans ? el('div', { class: 'otsmb-dim' }, t.plans) : null)))))) : null,
       notes.length ? el('div', { class: 'otsmb-team' },
         el('div', { class: 'otsmb-card-sub' }, 'Special handling notes'),

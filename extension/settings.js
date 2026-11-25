@@ -33,6 +33,7 @@ var OTSMB = (() => {
     customBg: '#00264b',
     customFg: '#ffffff',
     titleMax: 60,              // characters; 0 = the full title
+    titleCopy: 'dash',         // clicking the title copies 'dash' (12345678 - Title) or 'email' (##Request: 12345678## Title)
     cardsOnHover: true,        // false: contact cards open only on click
     casesTab: 'contact',       // the cases popup opens on 'contact' or 'account'
     fts: 'host',               // 'host', 'customer' or 'both'

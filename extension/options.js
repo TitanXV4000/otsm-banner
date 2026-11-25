@@ -98,6 +98,7 @@
     $('custom').style.display = s.colors === 'custom' ? '' : 'none';
     $('customBg').value = s.customBg; $('customFg').value = s.customFg;
     radios('titleMax', [[40, '40 characters'], [60, '60'], [80, '80'], [0, 'Full title']], () => s.titleMax, v => { s.titleMax = v; });
+    radios('titleCopy', [['dash', 'Case - title'], ['email', 'Email subject']], () => s.titleCopy, v => { s.titleCopy = v; });
     radios('cardsOnHover', [[true, 'Open on hover (click keeps it open)'], [false, 'Open on click only']], () => s.cardsOnHover, v => { s.cardsOnHover = v; });
     radios('casesTab', [['contact', 'Contact'], ['account', 'Account']], () => s.casesTab, v => { s.casesTab = v; });
     radios('names', [['first', 'First Last'], ['last', 'Last, First']], () => s.names, v => { s.names = v; });

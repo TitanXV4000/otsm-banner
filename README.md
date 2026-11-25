@@ -6,7 +6,7 @@ from Reports or contact pages (`/admin/...`) to a case without loading a new pag
 never added to such a tab (the banner then only appeared after F5). The layout follows the old Salesforce case header,
 with a small label over each value.
 
-- Fields (choose which and their order in the settings): **Case** (click to copy), **Title** (shortened; hover for all of it; click to copy "number - title"),
+- Fields (choose which and their order in the settings): **Case** (click to copy), **Title** (shortened; hover for all of it; click to copy "number - title", or "##Request: number## title" for an email subject (setting)),
   **Priority** and **Status** badges, **Owner**, **Contact**, **Account**, **Product**, **Entitlement** (support plan, links to it),
   **Product Dev ID** (only when the case has one; each ID opens its Quixy page in a new tab; with several, the banner shows the OCTCR one (else the first) and a +N button that lists them all, opened by the extension: Quixy is
   on a private address, and a link from the OTSM page made Chrome ask for "local network access"), **Created**, **Updated**.
@@ -16,7 +16,7 @@ with a small label over each value.
   Premium Manager, Enterprise Support Manager, assignment group): the case's entitlement, or the account's in-use ones when
   that has none. Then the case's active Special Handling Notes (mostly on the account; often where the SAM and named
   engineer are written down). Phone numbers call with Jabber (`ciscotel:`); the pencil next to each opens it in Jabber to edit
-  before calling (`clicktocallwithedit://`).
+  before calling (`clicktocallwithedit://`). A copy button after each phone number and email address copies it.
 - Case icon next to the contact: other cases, on a "Contact: <name>" or "Account: <name>" tab, newest first, with links.
   The current case is highlighted and closed cases are greyed. The contact tab includes cases the contact follows
   (SMAX FollowedByUsers; their portal lists them too), marked Following with that case's contact and account.
@@ -46,6 +46,7 @@ open banners redraw straight away.
 - Fields: show/hide and order (drag or arrows).
 - Colours: OTSM navy (default), Light, Dark grey, High contrast, or custom background/text.
 - Title length: 40, 60 (default), 80 characters or the full title.
+- Title copies as: Case - title (default) or Email subject (`##Request: 12345678## Title`, the format for emailing the customer).
 - Contact cards: open on hover (default) or on click only.
 - Other cases popup opens on the Contact (default) or Account tab.
 - Names: First Last (default) or Last, First (as OTSM stores them).

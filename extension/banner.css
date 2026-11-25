@@ -90,6 +90,10 @@ html.otsmb-on .grid-page-layout { margin-top: var(--otsmb-h) !important; }
 .otsmb-tel { white-space: nowrap; }
 .otsmb-float a.otsmb-teledit { margin-left: 5px; color: #6b7480; display: inline-flex; vertical-align: -1px; }
 .otsmb-float a.otsmb-teledit:hover { color: #0b5cad; text-decoration: none; }
+.otsmb-float .otsmb-copybtn { margin-left: 5px; padding: 0; border: 0; background: none; color: #6b7480; cursor: pointer; display: inline-flex; vertical-align: -1px; }
+.otsmb-float .otsmb-copybtn:hover { color: #0b5cad; }
+.otsmb-float .otsmb-copybtn.otsmb-done { color: #2e7d32; }
+.otsmb-float .otsmb-copybtn:focus:not(:focus-visible) { outline: none; }
 .otsmb-note { white-space: pre-line; background: #fff8e1; border-left: 3px solid #e8b400; padding: 4px 8px; margin-top: 4px; max-width: 520px; user-select: text; }
 .otsmb-card th { text-align: left; color: #5a6470; font-weight: 600; padding: 2px 12px 2px 0; vertical-align: top; white-space: nowrap; }
 .otsmb-card td { padding: 2px 0; user-select: text; }
