@@ -478,7 +478,7 @@
     const wrap = el('div');
     const show = async scope => {
       wrap.replaceChildren(el('div', { class: 'otsmb-dim' }, 'Loading…'));
-      const layout = 'Id,DisplayLabel,Status,Priority,OwnedByPerson.Name,RequestedForPerson,RequestedForPerson.Name,RequestToCompany,RequestToCompany.DisplayLabel,EmsCreationTime';
+      const layout = 'Id,DisplayLabel,ProductModel_c.DisplayLabel,Status,Priority,OwnedByPerson.Name,RequestedForPerson,RequestedForPerson.Name,RequestToCompany,RequestToCompany.DisplayLabel,EmsCreationTime';
       let rows, total, following = 0;
       if (scope === 'account') ({ rows, total } = await getList('Request', `RequestToCompany = ${r.RequestToCompany}`, layout, 'EmsCreationTime desc'));
       else {
@@ -496,11 +496,12 @@
       const tabs = el('div', { class: 'otsmb-tabs' },
         ['contact', 'account'].map(s => el('button', { type: 'button', class: s === scope ? 'otsmb-on' : '', onclick: () => show(s).catch(err => wrap.replaceChildren(el('div', { class: 'otsmb-err' }, err.message))) },
           s === 'contact' ? `Contact: ${cut(person(rel(r, 'RequestedForPerson', 'Name')) || '(unknown)', 30)}` : `Account: ${cut(rel(r, 'RequestToCompany', 'DisplayLabel') || '(unknown)', 30)}`)));
-      const head = ['Case', 'Title', 'Status', 'Owner'].concat(scope === 'account' ? ['Contact'] : [], ['Created']);
+      const head = ['Case', 'Title', 'Product', 'Status', 'Owner'].concat(scope === 'account' ? ['Contact'] : [], ['Created']);
       const body = rows.map(x => el('tr', { class: (x.Id === r.Id ? 'otsmb-current ' : '') + (CLOSED.includes(x.Status) ? 'otsmb-closed' : '') },
         el('td', null, el('a', { href: recordUrl('Request', x.Id) }, x.Id)),
         el('td', { class: 'otsmb-wrap' }, x.DisplayLabel || '', x._following ? el('div', { class: 'otsmb-dim' }, el('span', { class: 'otsmb-pill otsmb-follow' }, 'Following'),
           ' ' + person(rel(x, 'RequestedForPerson', 'Name')) + (x.RequestToCompany !== r.RequestToCompany ? ' · ' + rel(x, 'RequestToCompany', 'DisplayLabel') : '')) : null),
+        el('td', null, cutSpan(rel(x, 'ProductModel_c', 'DisplayLabel'), 40)),
         el('td', null, STATUS[x.Status] || x.Status || ''),
         el('td', null, person(rel(x, 'OwnedByPerson', 'Name'))),
         scope === 'account' ? el('td', null, person(rel(x, 'RequestedForPerson', 'Name'))) : null,

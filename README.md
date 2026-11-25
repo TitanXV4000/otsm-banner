@@ -17,7 +17,7 @@ with a small label over each value.
   that has none. Then the case's active Special Handling Notes (mostly on the account; often where the SAM and named
   engineer are written down). Phone numbers call with Jabber (`ciscotel:`); the pencil next to each opens it in Jabber to edit
   before calling (`clicktocallwithedit://`). A copy button after each phone number and email address copies it.
-- Case icon next to the contact: other cases, on a "Contact: <name>" or "Account: <name>" tab, newest first, with links.
+- Case icon next to the contact: other cases, on a "Contact: <name>" or "Account: <name>" tab, newest first, with links and each case's product.
   The current case is highlighted and closed cases are greyed. The contact tab includes cases the contact follows
   (SMAX FollowedByUsers; their portal lists them too), marked Following with that case's contact and account.
 - Shield icon next to the account: its entitlements. Columns: Contact (✓ when the case's contact is one of the entitlement's
